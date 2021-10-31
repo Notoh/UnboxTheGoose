@@ -9,3 +9,12 @@ class Face:
 
     def clear(self):
         self.matrix = [[0, 0, 0], [0, 0, 0], [0, 0, 0]]
+
+    def check_complete(self):
+        first_colour = self.matrix[0][0]
+        for i in range(3):
+            for j in range(3):
+                if (self.matrix[i][j] != first_colour):
+                    return False
+        return True
+                
