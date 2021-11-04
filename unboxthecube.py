@@ -1,81 +1,155 @@
-from unboxtheface import Face
+from unboxthecubie import Cubie 
 
-CLOCK_WISE = 0
-COUNTER_CLOCKWISE = 1
+UP = 0
+LEFT = 1
+FRONT = 2
+RIGHT = 3
+BACK = 4
+DOWN = 5
 
-U_F = 0 #up
-L_F = 1 #left
-F_F = 2 #front
-R_F = 3 #right
-B_F = 4 #bottom
-D_F = 5 #down
 
 class Cube:
-
-    '''
-
     
-
-
-    '''
-
-    faces = []
+    cubies = []
 
     def __init__(self):
-        self.faces = [Face(U_F, B_F, F_F, L_F, R_F), Face(L_F, U_F, R_F, B_F, F_F), Face(F_F, U_F, D_F, L_F, R_F), Face(R_F, U_F, D_F, F_F, B_F), Face(B_F, U_F, D_F, R_F, L_F), Face(D_F, F_F, B_F, L_F, R_F)]
 
-    
-    def rotate(self, index, direction):
+        self.cubies = [[[0, 0, 0],[0, 0, 0],[0, 0, 0]], [[0, 0, 0],[0, 0, 0],[0, 0, 0]], [[0, 0, 0],[0, 0, 0],[0, 0, 0]]]
 
-        if direction == CLOCK_WISE:
-            
-            #rotate the face
-            faces[index].rotate_clock_wise(direction);
+        for i in range(3):
+            for j in range(3):
+                for k in range(3):
+                    self.cubies[i][j][k] = Cubie([[UP, UP],[LEFT, LEFT],[FRONT, FRONT],[RIGHT, RIGHT],[BACK, BACK],[DOWN, DOWN]])
 
-            #rotate the adjacent small cube
-            
-            
 
+    def R_X(self, layer):
         
-    
-        
-    def clear(self):
+        #swap four corners
+        self.cubies[0][0][layer], self.cubies[0][2][layer] = self.cubies[0][2][layer], self.cubies[0][0][layer]
+        self.cubies[0][0][layer], self.cubies[2][2][layer] = self.cubies[2][2][layer], self.cubies[0][0][layer]
+        self.cubies[0][0][layer], self.cubies[2][0][layer] = self.cubies[2][0][layer], self.cubies[0][0][layer]
 
-        #clear all faces
-        for face in self.faces:
-            face.clear()
+        #swap four edges
+        self.cubies[0][1][layer], self.cubies[1][0][layer] = self.cubies[1][0][layer], self.cubies[0][1][layer]
+        self.cubies[1][0][layer], self.cubies[2][1][layer] = self.cubies[2][1][layer], self.cubies[1][0][layer]
+        self.cubies[2][1][layer], self.cubies[1][2][layer] = self.cubies[1][2][layer], self.cubies[2][1][layer]
 
 
+        #update cubies color
+        for i in range(3):
+            for j in range(3):
+                self.cubies[i][j][layer].R_X()
 
 
-    '''DEBUG FUNCTIONS'''
+    def R_XI(self, layer):
 
-    def check_integrity(self)-> bool:
+        #swap four corners
+        self.cubies[0][0][layer], self.cubies[2][0][layer] = self.cubies[2][0][layer], self.cubies[0][0][layer]
+        self.cubies[0][0][layer], self.cubies[2][2][layer] = self.cubies[2][2][layer], self.cubies[0][0][layer]
+        self.cubies[0][0][layer], self.cubies[0][2][layer] = self.cubies[0][2][layer], self.cubies[0][0][layer]
 
-    #cube must have 6 faces
-        if len(self.faces) != 6:
-            return False
-        
-     #check each face's integrity
-        for face in faces:
-            if not face.check_integrity():
-                return False
-
-        return True;
-
-    def print_cube(self):
-
-        for face in self.faces:
-            print(face.curr)
-            face.print_face();
-            print('\n')
-    
-    
+        #swap four edges
+        self.cubies[2][1][layer], self.cubies[1][2][layer] = self.cubies[1][2][layer], self.cubies[2][1][layer]
+        self.cubies[1][0][layer], self.cubies[2][1][layer] = self.cubies[2][1][layer], self.cubies[1][0][layer]
+        self.cubies[0][1][layer], self.cubies[1][0][layer] = self.cubies[1][0][layer], self.cubies[0][1][layer]
         
 
+        #update cubies color
+        for i in range(3):
+            for j in range(3):
+                self.cubies[i][j][layer].R_XI()
+
+    
+    def R_Z(self, layer):
+        
+        #swap four corners
+        self.cubies[0][layer][0], self.cubies[0][layer][2] = self.cubies[0][layer][2], self.cubies[0][layer][0]
+        self.cubies[0][layer][0], self.cubies[2][layer][2] = self.cubies[2][layer][2], self.cubies[0][layer][0]
+        self.cubies[0][layer][0], self.cubies[2][layer][0] = self.cubies[2][layer][0], self.cubies[0][layer][0]
+
+        #swap four edges
+        self.cubies[0][layer][1], self.cubies[1][layer][0] = self.cubies[1][layer][0], self.cubies[0][layer][1]
+        self.cubies[1][layer][0], self.cubies[2][layer][1] = self.cubies[2][layer][1], self.cubies[1][layer][0]
+        self.cubies[2][layer][1], self.cubies[1][layer][2] = self.cubies[1][layer][2], self.cubies[2][layer][1]
+
+
+        #update cubies color
+        for i in range(3):
+            for j in range(3):
+                self.cubies[i][j][layer].R_Z()
+
+
+    def R_ZI(self, layer):
+
+        #swap four corners
+        self.cubies[0][layer][0], self.cubies[2][layer][0] = self.cubies[2][layer][0], self.cubies[0][layer][0]
+        self.cubies[0][layer][0], self.cubies[2][layer][2] = self.cubies[2][layer][2], self.cubies[0][layer][0]
+        self.cubies[0][layer][0], self.cubies[0][layer][2] = self.cubies[0][layer][2], self.cubies[0][layer][0]
+
+        #swap four edges
+        self.cubies[2][layer][1], self.cubies[1][layer][2] = self.cubies[1][layer][2], self.cubies[2][layer][1]
+        self.cubies[1][layer][0], self.cubies[2][layer][1] = self.cubies[2][layer][1], self.cubies[1][layer][0]
+        self.cubies[0][layer][1], self.cubies[1][layer][0] = self.cubies[1][layer][0], self.cubies[0][layer][1]
+        
+
+        #update cubies color
+        for i in range(3):
+            for j in range(3):
+                self.cubies[i][j][layer].R_ZI()
+
+
+
+    def print(self):
+        
+        for j in range(3):
+            for k in range(3):
+                print(self.cubies[0][j][k].get_color(BACK), end = '')
+            print("")
+        print("\n")
+
+        
+        for k in range(3):
+            for i in range(3):
+                print(self.cubies[i][0][k].get_color(LEFT), end = '')
+            print("")
+        print("\n")
+
+        
+        for i in range(3):
+            for j in range(3):
+                print(self.cubies[i][j][2].get_color(UP), end = '')
+            print("")
+        print("\n")
+
+        
+        for k in range(2, -1, -1):
+            for i in range(3):
+                print(self.cubies[i][0][k].get_color(RIGHT), end = '')
+            print("")
+        print("\n")
+
+        
+        for j in range(3):
+            for k in range(2, -1, -1):
+                print(self.cubies[0][j][k].get_color(FRONT), end = '')
+            print("")
+        print("\n")
+
+        
+        for i in range(2, -1, -1):
+            for j in range(3):
+                print(self.cubies[i][j][0].get_color(DOWN), end = '')
+            print("")
+        print("\n")
+
+    
 
 if __name__ == "__main__":
+    
     print("test\n")
-
     cube = Cube()
-    cube.print_cube()
+    cube.print()
+
+    #cube.R_X(2)
+    #cube.print()
+
