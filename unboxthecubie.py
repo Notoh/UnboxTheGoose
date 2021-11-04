@@ -17,7 +17,7 @@ class Cubie:
     
     color = 0
 
-    
+
     def __init__(self, color_lst):
         
         for pair in color_lst:
