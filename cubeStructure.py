@@ -191,3 +191,39 @@ testCube.print()
 cycle(testCube, trans["D"], 1)
 
 testCube.print()
+
+
+#########################
+# cube string input code:
+# by Matthew PB
+#########################
+
+#changes U, U', and U2 to their respective algorithms. Also clears any leading and trailing whitespace.
+def roatateCommandsParseU(str):
+    str = str.replace("U", UAlgorithm)
+    str = str.replace("U'", UprimeAlgorithm)
+    str = str.replace("U2", U2Algorithm)
+    str = str.strip()
+    return str
+
+#test of the above
+str = "   D D D   U U       U2 U'"
+print(roatateCommandsParseU(str))
+
+##pass in the cube and the string of commands, and it will be rotated by said amount
+def rotateCubeFromString(cube, str):
+
+    #loop through each command
+    for i in str.split():
+        command = [cube,0,1] #by default, it is the 0th face and is clockwise
+        command[1] = trans[i[0]]
+
+        #checking if there is a second argument in the command
+        if i.length > 1:
+            if i[1] == '\'': #counter cloclwise
+                command[2] = 3
+            elif i[1] == '2': #180 turn
+                command[2] = 2
+
+        #call the function
+        cycle(*command) #the '*' apparently is called "unpacking", which breaks the list down into arguments.
