@@ -25,12 +25,16 @@ Cube.turnU(2)
 trans = {"U": 0, "L": 1, "F": 2, "R": 3, "B": 4, "D": 5}
 unTrans = ["U", "L", "F", "R", "B", "D"]
 
+UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
+UprimeAlgorithm = "R' L' F2 B2 R L D' R' L' F2 B2 R L"
+U2Algorithm = "B2 R2 L2 F2 D2 B2 R2 L2 F2"
+
 # [ corners VS edges
 #    [ loop step
 #       [ start VS end
 #          [ y, x
 # ]  ]  ]  ]
-loop = [[ # Corners
+loops = [[ # Corners
     [[0, 0], [0, 2]],
     [[2, 0], [0, 0]],
     [[2, 2], [2, 0]],
@@ -47,16 +51,16 @@ loop = [[ # Corners
 #       [ start VS end
 #          [ Face, Axis (slice), Index (slice), Direction (slice)
 # ]  ]  ]  ]
-section = [[ # U face
-    [[5, 0, 2,  1], [3, 1, 0,  1]],
-    [[1, 1, 2, -1], [5, 0, 2,  1]],
+slices = [[ # U face
+    [[4, 0, 2,  1], [3, 1, 0,  1]],
+    [[1, 1, 2, -1], [4, 0, 2,  1]],
     [[2, 0, 0, -1], [1, 1, 2, -1]],
     [[3, 1, 0,  1], [2, 0, 0, -1]]
 ],[ # L face
-    [[5, 0, 2,  1], [3, 1, 0,  1]],
-    [[1, 1, 2, -1], [5, 0, 2,  1]],
-    [[2, 0, 0, -1], [1, 1, 2, -1]],
-    [[3, 1, 0,  1], [2, 0, 0, -1]]
+    [[4, 1, 0, 1], [0, 1, 0, 1]],
+    [[5, 1, 0, 1], [4, 1, 0, 1]],
+    [[2, 1, 0, 1], [5, 1, 0, 1]],
+    [[0, 1, 0, 1], [2, 1, 0, 1]]
 ],[ # F face
     [[5, 0, 2,  1], [3, 1, 0,  1]],
     [[1, 1, 2, -1], [5, 0, 2,  1]],
@@ -79,6 +83,19 @@ section = [[ # U face
     [[3, 1, 0,  1], [2, 0, 0, -1]]
 ]]
 
+
+def getSliceCoors(group): # Interprets a 1x4 element from the above 4D matrix
+    dimensionalValues = [[0, 0], [0, 0], [0, 0]]
+    #print("[" + str(group[0]) + ", " + str(group[1]) + ", " + str(group[2]) + ", " + str(group[3]) + "] ---> ", end="")
+    for i in range(0, 3):
+        dimensionalValues[i] = [
+            int(round((group[1] * -1 + 1) * group[2] + group[1] * (group[3] * i - (group[3] - 1)))),
+            int(round(group[1] * group[2] + (group[1] * -1 + 1) * (group[3] * i - (group[3] - 1))))
+        ]
+    # print("[[" + str(dimensionalValues[0][0]) + ", " + str(dimensionalValues[0][1]) + "], [" + str(dimensionalValues[1][0]) + ", " + str(dimensionalValues[1][1]) + "], [" + str(dimensionalValues[2][0]) + ", " + str(dimensionalValues[2][1]) + "]]")
+    return dimensionalValues
+
+
 class Cube:
     def __init__(self, U, L, F, R, B, D):
         self.sides = [U, L, F, R, B, D]
@@ -91,7 +108,6 @@ class Cube:
             for x in range(0, 3):
                 print(str(self.sides[4][y][x]) + " ", end = "")
             print(" |")
-
         # L, U, R faces
         faces = [1, 0, 3]
         print("__________|_________|__________")
@@ -120,32 +136,58 @@ class Cube:
         pass
 
 
-def cycle(cube, face, dir):
+def cycle(cube, face, times):
     # Loop the chosen face
-    mainHold = [cube.sides[face][loop[0][0][0][0]][loop[0][0][0][1]], cube.sides[face][loop[1][0][0][0]][loop[1][0][0][1]]]
-    for i in range(1, 4):
-        cube.sides[face][loop[0][i][1][0]][loop[0][i][1][1]] = cube.sides[face][loop[0][i][0][0]][loop[0][i][0][1]]
-        cube.sides[face][loop[1][i][1][0]][loop[1][i][1][1]] = cube.sides[face][loop[1][i][0][0]][loop[1][i][0][1]]
-    cube.sides[face][loop[0][0][1][0]][loop[0][0][1][1]] = mainHold[0]
-    cube.sides[face][loop[1][0][1][0]][loop[1][0][1][1]] = mainHold[1]
+    for uselessVariable in range(0, times):
+        pieceHold = [cube.sides[face][loops[0][0][0][0]][loops[0][0][0][1]], cube.sides[face][loops[1][0][0][0]][loops[1][0][0][1]]]
+        for i in range(1, 4):
+            cube.sides[face][loops[0][i][1][0]][loops[0][i][1][1]] = cube.sides[face][loops[0][i][0][0]][loops[0][i][0][1]]
+            cube.sides[face][loops[1][i][1][0]][loops[1][i][1][1]] = cube.sides[face][loops[1][i][0][0]][loops[1][i][0][1]]
+        cube.sides[face][loops[0][0][1][0]][loops[0][0][1][1]] = pieceHold[0]
+        cube.sides[face][loops[1][0][1][0]][loops[1][0][1][1]] = pieceHold[1]
 
-    # Cycle Sections for the chosen face
-    
+        # Cycle Sections for the chosen face
+        coorFrom = getSliceCoors(slices[face][0][0])
+        coorTo = []
+        sliceHold = [cube.sides[slices[face][0][0][0]][coorFrom[0][0]][coorFrom[0][1]], cube.sides[slices[face][0][0][0]][coorFrom[1][0]][coorFrom[1][1]], cube.sides[slices[face][0][0][0]][coorFrom[2][0]][coorFrom[2][1]]]
+        for y in range(1, 4):
+            coorFrom = getSliceCoors(slices[face][y][0])
+            coorTo = getSliceCoors(slices[face][y][1])
+            for i in range(0, 3):
+                cube.sides[slices[face][y][1][0]][coorTo[i][0]][coorTo[i][1]] = cube.sides[slices[face][y][0][0]][coorFrom[i][0]][coorFrom[i][1]]
+        coorTo = getSliceCoors(slices[face][0][1])
+        for i in range(0, 3):
+            cube.sides[slices[face][0][1][0]][coorTo[i][0]][coorTo[i][1]] = sliceHold[i]
 
-        
 
 
-testCube = Cube(
+"""testCube = Cube(
     [[0, 1, 2], [3, 0, 5], [6, 7, 8]],
     [[2, 2, 2], [3, 1, 3], [5, 5, 5]],
     [[0, 0, 0], [1, 2, 1], [4, 4, 4]],
     [[9, 8, 7], [6, 3, 4], [3, 2, 1]],
     [[0, 1, 2], [0, 4, 2], [0, 1, 2]],
     [[5, 4, 3], [5, 5, 3], [5, 4, 3]]
+)"""
+"""testCube = Cube(
+    [[0, 0, 0], [0, 0, 0], [0, 0, 0]],
+    [[1, 1, 1], [1, 1, 1], [1, 1, 1]],
+    [[2, 2, 2], [2, 2, 2], [2, 2, 2]],
+    [[3, 3, 3], [3, 3, 3], [3, 3, 3]],
+    [[4, 4, 4], [4, 4, 4], [4, 4, 4]],
+    [[5, 5, 5], [5, 5, 5], [5, 5, 5]]
+)"""
+testCube = Cube(
+    [[0, 0, 8], [0, 0, 0], [7, 0, 0]],
+    [[1, 1, 7], [1, 1, 1], [8, 1, 1]],
+    [[7, 2, 2], [2, 2, 2], [2, 2, 8]],
+    [[3, 3, 8], [3, 3, 3], [7, 3, 3]],
+    [[8, 4, 4], [4, 4, 4], [4, 4, 7]],
+    [[5, 5, 7], [5, 5, 5], [8, 5, 5]]
 )
 
 testCube.print()
 
-cycle(testCube, trans["U"], 1)
+cycle(testCube, trans["L"], 1)
 
 testCube.print()
