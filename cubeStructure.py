@@ -144,7 +144,7 @@ class Cube:
                 for k in range(3):
                     self.sides[i][j][k] = (self.sides[i][j][k] + amount) % 6
 
-    #check if the cube is solved
+    #check if the cube is solved by Matthew
     def cubeIsSolved(self):
         for i in range(6): #loop through each face
 
