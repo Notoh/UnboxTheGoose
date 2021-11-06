@@ -135,6 +135,27 @@ class Cube:
             #case 0:
         pass
 
+    #cube rotation function by Matthew.
+    #input the amount to be rotated, and then each face will have that amount applied to it (theory from Josiah)
+    #example: if amount=1, then 1->2, 2->3, ... 5->0
+    def rotateCube(self, amount):
+        for i in range(6):
+            for j in range(3):
+                for k in range(3):
+                    self.sides[i][j][k] = (self.sides[i][j][k] + amount) % 6
+
+    #check if the cube is solved
+    def cubeIsSolved(self):
+        for i in range(6): #loop through each face
+
+            faceColour = self.sides[i][0][0] #grab a sample colour
+
+            #check if any colours in the cube are not the same as the original
+            for j in range(3):
+                for k in range(3):
+                    if self.sides[i][j][k] != faceColour:
+                        return False
+        return True
 
 def cycle(cube, face, times):
     # Loop the chosen face
@@ -158,6 +179,8 @@ def cycle(cube, face, times):
         coorTo = getSliceCoors(slices[face][0][1])
         for i in range(0, 3):
             cube.sides[slices[face][0][1][0]][coorTo[i][0]][coorTo[i][1]] = sliceHold[i]
+
+
 
 
 
