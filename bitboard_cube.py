@@ -99,9 +99,84 @@ class Cube:
         shift_bits = sticker_index * STICKER_BIT_SIZE
         self.faces[face_index] &= ~(STICKER_MASK << shift_bits)
         self.faces[face_index] |= new_sticker_color << shift_bits
-        
 
     
+    '''
+    args: face's index, clockwise rotating times
+    return:
+
+    Rotating the stickers in a face clockwise
+    '''
+    @cache
+    def rotate(self, face_index, times):
+
+        assert(0 <= times <= 4)
+
+
+        #rotate face
+        left_shift_bits = 2 * times * STICKER_BIT_SIZE
+        right_shift_bits = 32 - left_shift_bits;
+
+        left_bits = self.faces[face_index] << left_shift_bits & ((1 << 33) - 1)
+        right_bits = self.faces[face_index] >> right_shift_bits
+
+        self.faces[face_index] = left_bits | right_bits
+
+
+
+        #rotate adjcent edges
+        edges_lst = collections.deque()
+
+        for arr in adj_edges[face_index]:
+
+            edges = []
+            for sticker_index in arr[1:4]:
+                edges.append(self.get_color(arr[0], sticker_index))
+
+            edges_lst.append(edges)
+
+
+        #rotate clockwise
+        edges_lst.rotate(times)
+
+        for i in range(4):
+            for j in range(3):
+
+                #face index, sticker index, new color
+                self.set_color(adj_edges[face_index][i][0], adj_edges[face_index][i][j+1], edges_lst[i][j])
+
+
+
+    '''
+    args: face's index
+    return: true if the face is completed
+    '''
+    def is_face_completed(self, face_index : int) -> bool:
+
+        bits_sequence = self.faces[face_index]
+
+        for sticker_index in range(STICKER_NUM):
+
+            if (bits_sequence & STICKER_MASK) != face_index:
+                return False
+
+            bits_sequence >= STICKER_BIT_SIZE
+
+        return True
+
+
+    '''
+    args:
+    return: true if the cube is completed
+    '''
+    def is_cube_completed(self) -> bool:
+
+        for face_index in range(FACE_NUM):
+
+            if not self.is_face_completed(face_index):
+                return False;
+
+        return True
 
     
 
@@ -171,51 +246,7 @@ class Cube:
 
 
 
-    '''
-    args: face's index, clockwise rotating times
-    return:
-
-    Rotating the stickers in a face clockwise
-    '''
-    @cache
-    def rotate(self, face_index, times):
-
-        assert(0 <= times <= 4)
-
-
-        #rotate face
-        left_shift_bits = 2 * times * STICKER_BIT_SIZE
-        right_shift_bits = 32 - left_shift_bits;
-
-        left_bits = self.faces[face_index] << left_shift_bits & ((1 << 33) - 1)
-        right_bits = self.faces[face_index] >> right_shift_bits
-
-        self.faces[face_index] = left_bits | right_bits
-
-
-
-        #rotate adjcent edges
-        edges_lst = collections.deque()
-
-        for arr in adj_edges[face_index]:
-
-            edges = []
-            for sticker_index in arr[1:4]:
-                edges.append(self.get_color(arr[0], sticker_index))
-
-            edges_lst.append(edges)
-
-
-        #rotate clockwise
-        edges_lst.rotate(times)
-
-        for i in range(4):
-            for j in range(3):
-
-                #face index, sticker index, new color
-                self.set_color(adj_edges[face_index][i][0], adj_edges[face_index][i][j+1], edges_lst[i][j])
     
-
     
 
 if __name__ == "__main__":
