@@ -1,3 +1,5 @@
+import collections
+import time
 
 UP = 0;
 LEFT = 1;
@@ -13,14 +15,32 @@ STICKER_MASK = 15
 
 
 
-#cube rotation index
-[
-    [],
-    [],
-    [],
-    [],
-    [],
-    []
+#cube adj edges, [face_index, s1, s2, s3]
+adj_edges = [
+    #UP
+    [
+        [4, 6, 5, 4], [3, 0, 7, 6], [2, 2, 1, 0], [1, 4, 3, 2]
+    ],
+    #LEFT
+    [
+        [4, 0, 7, 6], [0, 0, 7, 6], [2, 0, 7, 6], [5, 0, 7, 6]
+    ],
+    #FRONT
+    [
+        [1, 6, 5, 4], [0, 6, 5, 4], [3, 6, 5, 4], [5, 2, 1, 0]
+    ],
+    #RIGHT
+    [
+        [0, 4, 3, 2], [4, 4, 3, 2], [5, 4, 3, 2], [2, 4, 3, 2]
+    ],
+    #BACK
+    [
+        [5, 6, 5, 4], [3, 2, 1, 0], [0, 2, 1, 0], [1, 2, 1, 0]
+    ],
+    #DOWN
+    [
+        [2, 6, 5, 4], [3, 4, 3, 2], [4, 2, 1, 0], [1, 0, 7, 6]
+    ]
 ]
 
 
@@ -59,6 +79,7 @@ class Cube:
         
         return self.faces[face_index] >> (sticker_index * STICKER_BIT_SIZE) & STICKER_MASK
 
+
     '''
     args: face's index, new face's bits sequence
     return:
@@ -80,6 +101,7 @@ class Cube:
         
 
     
+
     
 
     '''
@@ -102,7 +124,6 @@ class Cube:
         print(placeholder + str(self.get_color(face_index, 6)), end = '')
         print(self.get_color(face_index, 5), end = '')
         print(self.get_color(face_index, 4))
-
 
 
     '''
@@ -158,7 +179,9 @@ class Cube:
     def rotate(self, face_index, times):
 
         assert(0 <= times <= 4)
-        
+
+
+        #rotate face
         left_shift_bits = 2 * times * STICKER_BIT_SIZE
         right_shift_bits = 32 - left_shift_bits;
 
@@ -167,28 +190,43 @@ class Cube:
 
         self.faces[face_index] = left_bits | right_bits
 
-        
 
 
+        #rotate adjcent edges
+        edges_lst = collections.deque()
 
-        
+        for arr in adj_edges[face_index]:
 
+            edges = []
+            for sticker_index in arr[1:4]:
+                edges.append(self.get_color(arr[0], sticker_index))
+
+            edges_lst.append(edges)
+
+
+        #rotate clockwise
+        edges_lst.rotate(times)
+
+        for i in range(4):
+            for j in range(3):
+
+                #face index, sticker index, new color
+                self.set_color(adj_edges[face_index][i][0], adj_edges[face_index][i][j+1], edges_lst[i][j])
+    
 
     
 
 if __name__ == "__main__":
+    
     print("Test:")
+
+    begin = time.time()
+    
     cube = Cube()
 
-    
-    for i in range(8):
-        cube.set_color(0, i, i)
+    for i in range(2000000):
+        cube.rotate(FRONT, 1)
 
-    
-    cube.print_cube()
+    end = time.time()
 
-
-    
-    cube.print_face(0, "")
-    cube.rotate(0, 3)
-    cube.print_face(0, "")
+    print(end - begin)
