@@ -14,7 +14,7 @@ STICKER_NUM = 8
 STICKER_BIT_SIZE = 4
 STICKER_MASK = 15
 
-
+FACE_COMPLETE_MASK = [0,286331153,572662306,858993459,1145324612, 1431655765]
 
 #cube adj edges, [face_index, s1, s2, s3]
 adj_edges = [
@@ -151,27 +151,18 @@ class Cube:
     args: face's index
     return: true if the face is completed
     '''
+    @cache
     def is_face_completed(self, face_index : int) -> bool:
-
-        bits_sequence = self.faces[face_index]
-
-        for sticker_index in range(STICKER_NUM):
-
-            if (bits_sequence & STICKER_MASK) != face_index:
-                return False
-
-            bits_sequence >= STICKER_BIT_SIZE
-
-        return True
-
+        return (self.faces[face_index] == FACE_COMPLETE_MASK[face_index])
 
     '''
     args:
     return: true if the cube is completed
     '''
+    @cache
     def is_cube_completed(self) -> bool:
 
-        for face_index in range(FACE_NUM):
+        for face_index in range(FACE_NUM-1):
 
             if not self.is_face_completed(face_index):
                 return False;
@@ -257,8 +248,11 @@ if __name__ == "__main__":
     
     cube = Cube()
 
+    """for i in range(10000000):
+        cube.rotate(FRONT, 1)"""
+
     for i in range(10000000):
-        cube.rotate(FRONT, 1)
+        cube.is_face_completed(0)
 
     end = time.time()
 
