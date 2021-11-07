@@ -8,6 +8,13 @@ BACK = 4
 DOWN = 5
 
 
+U = 1
+L = 2
+F = 3
+R = 4
+B = 5
+D = 6
+
 class Cube:
     
     cubies = []
