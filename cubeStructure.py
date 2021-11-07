@@ -1,3 +1,5 @@
+import time
+
 # The Cube Structure System
 # Author: Josiah Plett
 # Date: Nov 5th 2021
@@ -200,20 +202,6 @@ def cycle(cube, face, times):
     [[4, 4, 4], [4, 4, 4], [4, 4, 4]],
     [[5, 5, 5], [5, 5, 5], [5, 5, 5]]
 )"""
-testCube = Cube(
-    [[0, 0, 8], [0, 0, 0], [7, 0, 0]],
-    [[1, 1, 7], [1, 1, 1], [8, 1, 1]],
-    [[7, 2, 2], [2, 2, 2], [2, 2, 8]],
-    [[3, 3, 8], [3, 3, 3], [7, 3, 3]],
-    [[8, 4, 4], [4, 4, 4], [4, 4, 7]],
-    [[5, 5, 7], [5, 5, 5], [8, 5, 5]]
-)
-
-testCube.print()
-
-cycle(testCube, trans["D"], 1)
-
-testCube.print()
 
 
 #########################
@@ -250,3 +238,24 @@ def rotateCubeFromString(cube, str):
 
         #call the function
         cycle(*command) #the '*' apparently is called "unpacking", which breaks the list down into arguments.
+
+
+
+if __name__ == "__main__":
+
+    testCube = Cube(
+    [[0, 0, 8], [0, 0, 0], [7, 0, 0]],
+    [[1, 1, 7], [1, 1, 1], [8, 1, 1]],
+    [[7, 2, 2], [2, 2, 2], [2, 2, 8]],
+    [[3, 3, 8], [3, 3, 3], [7, 3, 3]],
+    [[8, 4, 4], [4, 4, 4], [4, 4, 7]],
+    [[5, 5, 7], [5, 5, 5], [8, 5, 5]]
+    )
+    
+    begin = time.time()
+    
+    for i in range(2000000):
+        cycle(testCube, trans["D"], 1)
+
+    end = time.time()
+    print(end-begin)

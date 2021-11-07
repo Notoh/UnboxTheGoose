@@ -1,4 +1,5 @@
-from unboxthecubie import Cubie 
+from unboxthecubie import Cubie
+import time
 
 UP = 0
 LEFT = 1
@@ -193,13 +194,15 @@ class Cube:
 if __name__ == "__main__":
     
     print("test\n")
-    cube = Cube()
-    cube.print()
 
-    cube.R_Z(2)
-    cube.print()
-    cube.R_ZI(2)
-    cube.print()
+    begin = time.time()
+    
+    cube = Cube()
+    for i in range(2000000):
+        cube.R_Z(0)
+
+    end = time.time()
+    print(end - begin)
     
    
 
