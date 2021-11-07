@@ -222,12 +222,12 @@ testCube.print()
 #########################
 
 #changes U, U', and U2 to their respective algorithms. Also clears any leading and trailing whitespace.
-def roatateCommandsParseU(str):
-    str = str.replace("U", UAlgorithm)
-    str = str.replace("U'", UprimeAlgorithm)
-    str = str.replace("U2", U2Algorithm)
-    str = str.strip()
-    return str
+def roatateCommandsParseU(input):
+    input = input.replace("U'", UprimeAlgorithm)
+    input = input.replace("U2", U2Algorithm)
+    input = input.replace("U", UAlgorithm)
+    input = input.strip()
+    return input
 
 #test of the above
 str = "   D D D   U U       U2 U'"
