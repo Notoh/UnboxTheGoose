@@ -14,7 +14,7 @@ STICKER_NUM = 8
 STICKER_BIT_SIZE = 4
 STICKER_MASK = 15
 
-FACE_COMPLETE_MASK = [0,286331153,572662306,858993459,1145324612, 1431655765]
+FACE_COMPLETENESS_MASK = [0,286331153,572662306,858993459,1145324612, 1431655765]
 
 #cube adj edges, [face_index, s1, s2, s3]
 adj_edges = [
@@ -123,12 +123,10 @@ class Cube:
         self.faces[face_index] = left_bits | right_bits
 
 
-
         #rotate adjcent edges
         edges_lst = collections.deque()
 
         for arr in adj_edges[face_index]:
-
             edges = []
             for sticker_index in arr[1:4]:
                 edges.append(self.get_color(arr[0], sticker_index))
@@ -141,10 +139,7 @@ class Cube:
 
         for i in range(4):
             for j in range(3):
-
-                #face index, sticker index, new color
                 self.set_color(adj_edges[face_index][i][0], adj_edges[face_index][i][j+1], edges_lst[i][j])
-
 
 
     '''
@@ -155,6 +150,7 @@ class Cube:
     def is_face_completed(self, face_index : int) -> bool:
         return (self.faces[face_index] == FACE_COMPLETE_MASK[face_index])
 
+    
     '''
     args:
     return: true if the cube is completed
@@ -163,10 +159,9 @@ class Cube:
     def is_cube_completed(self) -> bool:
 
         for face_index in range(FACE_NUM-1):
-
             if not self.is_face_completed(face_index):
                 return False;
-
+            
         return True
 
     
