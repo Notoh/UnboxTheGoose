@@ -1,5 +1,6 @@
 import collections
 import time
+from functools import cache
 
 UP = 0;
 LEFT = 1;
@@ -176,6 +177,7 @@ class Cube:
 
     Rotating the stickers in a face clockwise
     '''
+    @cache
     def rotate(self, face_index, times):
 
         assert(0 <= times <= 4)
@@ -224,7 +226,7 @@ if __name__ == "__main__":
     
     cube = Cube()
 
-    for i in range(2000000):
+    for i in range(10000000):
         cube.rotate(FRONT, 1)
 
     end = time.time()
