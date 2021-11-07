@@ -148,7 +148,7 @@ class Cube:
     '''
     @cache
     def is_face_completed(self, face_index : int) -> bool:
-        return (self.faces[face_index] == FACE_COMPLETE_MASK[face_index])
+        return (self.faces[face_index] == FACE_COMPLETENESS_MASK[face_index])
 
     
     '''
