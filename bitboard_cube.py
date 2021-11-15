@@ -4,12 +4,12 @@ from functools import cache
 
 
 
-UP = 0;
-LEFT = 1;
-FRONT = 2;
-RIGHT = 3;
-BACK = 4;
-DOWN = 5;
+UP = 0
+LEFT = 1
+FRONT = 2
+RIGHT = 3
+BACK = 4
+DOWN = 5
 
 
 
@@ -145,7 +145,7 @@ class Cube:
     args: face's index
     return: true if the face is completed
     '''
-    @cache
+    #@cache
     def is_face_completed(self, face_index : int) -> bool:
         return (self.faces[face_index] == FACE_COMPLETENESS_MASK[face_index])
 
@@ -154,7 +154,7 @@ class Cube:
     args:
     return: true if the cube is completed
     '''
-    @cache
+    #@cache
     def is_cube_completed(self) -> bool:
         
         for face_index in range(FACE_NUM-1):
@@ -169,7 +169,7 @@ class Cube:
 
     Rotating the stickers in a face clockwise
     '''
-    @cache
+    #@cache
     def rotate(self, face_index, times):
 
         assert(0 <= times <= 4)
@@ -182,6 +182,9 @@ class Cube:
         right_bits = self.faces[face_index] >> right_shift_bits
 
         self.faces[face_index] = left_bits | right_bits
+
+
+        print(bin(self.faces[face_index]))
 
 
         #rotate adjcent edges
@@ -272,26 +275,40 @@ if __name__ == "__main__":
     
     cube = Cube()
     cube.print_cube()
-
     
-    cube.set_cube(
-        [[0, 1, 2, 3, UP, 5, 6, 7, 8],
-        [0, 1, 2, 3, LEFT, 5, 6, 7, 8],
-        [0, 1, 2, 3, FRONT, 5, 6, 7, 8],
-        [0, 1, 2, 3, RIGHT, 5, 6, 7, 8],
-        [0, 1, 2, 3, BACK, 5, 6, 7, 8],
-        [0, 1, 2, 3, DOWN, 5, 6, 7, 8]])
+    
+    cube.rotate(RIGHT, 3)
+    cube.print_cube()
+    cube.rotate(LEFT, 3)
+    cube.print_cube()
+    cube.rotate(FRONT, 2)
+    cube.print_cube()
+    cube.rotate(BACK, 2)
+    cube.print_cube()
+    cube.rotate(RIGHT, 1)
+    cube.print_cube()
+    cube.rotate(LEFT, 1)
+    cube.print_cube()
+    cube.rotate(DOWN, 1)
     cube.print_cube()
 
 
-    for face in range(FACE_NUM):
-        
-        cube.rotate(face, 1)
-        cube.print_cube()
-        cube.rotate(face, 3)
-        cube.print_cube()
-        
     
+    cube.rotate(RIGHT, 3)
+    cube.print_cube()
+    cube.rotate(LEFT, 3)
+    cube.print_cube()
+    cube.rotate(FRONT, 2)
+    cube.print_cube()
+    cube.rotate(BACK, 2)
+    cube.print_cube()
+    cube.rotate(RIGHT, 1)
+    cube.print_cube()
+    cube.rotate(LEFT, 1)
+    cube.print_cube()
     
+    #UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
+    
+
     end = time.time()
     print(end - begin)
