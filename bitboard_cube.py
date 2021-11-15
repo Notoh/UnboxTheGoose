@@ -2,6 +2,8 @@ import collections
 import time
 from functools import cache
 
+
+
 UP = 0;
 LEFT = 1;
 FRONT = 2;
@@ -9,8 +11,14 @@ RIGHT = 3;
 BACK = 4;
 DOWN = 5;
 
+
+
+
+
+
 FACE_NUM = 6
 STICKER_NUM = 8
+STICKER_CENTER_INDEX = 8
 STICKER_BIT_SIZE = 4
 STICKER_MASK = 15
 
@@ -45,6 +53,17 @@ adj_edges = [
 ]
 
 
+#cube orientation, index 8 is the center sticker
+EXTERNAL_TO_INTERNAL = [
+    [0, 1, 2, 7, 8, 3, 6, 5, 4],#UP
+    [2, 3, 4, 1, 8, 5, 0, 7, 6],#LEFT
+    [0, 1, 2, 7, 8, 3, 6, 5, 4],#FRONT
+    [6, 7, 0, 5, 8, 1, 4, 3, 2],#RIGHT
+    [4, 5, 6, 3, 8, 7, 2, 1, 0],#BACK
+    [0, 1, 2, 7, 8, 3, 6, 5, 4]#DOWN
+]
+
+
 class Cube:
 
     #an array of 32 bits interger
@@ -56,51 +75,39 @@ class Cube:
         self.faces = [0, 0, 0, 0, 0, 0]
 
         for face_index in range(FACE_NUM):
-            
             for i in range(STICKER_NUM):
                 self.faces[face_index] |= face_index << (i * STICKER_BIT_SIZE)
 
 
 
 
+    #Private Methods
+                
     '''
-    args: face's index, sticker's index
+    args: face's index, sticker's internal index
     return: sticker's color
     '''
-    def get_color(self, face_index : int, sticker_index : int) -> int:
+    def __get_color(self, face_index : int, internal_sticker_index : int) -> int:
         
-        return self.faces[face_index] >> (sticker_index * STICKER_BIT_SIZE) & STICKER_MASK
-
-
-    '''
-    args: face's index
-    return: face's bits sequence
-    '''
-    def get_face(self, face_index : int) -> int:
-        
-        return self.faces[face_index]
+        return self.faces[face_index] >> (internal_sticker_index * STICKER_BIT_SIZE) & STICKER_MASK
 
     
     '''
-    args: face's index, sticker's index
+    args: face's index, sticker's internal index
     return: sticker's color
     '''
-    def set_color(self, face_index : int, sticker_index : int, new_sticker_color : int):
+    def __set_color(self, face_index : int, internal_sticker_index : int, new_sticker_color : int):
 
-        shift_bits = sticker_index * STICKER_BIT_SIZE
+        shift_bits = internal_sticker_index * STICKER_BIT_SIZE
         self.faces[face_index] &= ~(STICKER_MASK << shift_bits)
         self.faces[face_index] |= new_sticker_color << shift_bits
 
-        
-    '''
-    args: face's index, new face's bits sequence
-    return:
-    '''
-    def set_face(self, face_index : int, new_face : int):
-        
-        self.faces[face_index] = new_face
+            
+    
+    
 
 
+    #Public Methods:
     '''
     args: array representation of cube's faces
     return:
@@ -109,21 +116,53 @@ class Cube:
     def set_cube(self, new_cube):
 
         for new_face in new_cube:
+            face_index = new_face[4]
 
-            face_index = new_face[1][1]
+            for sticker_index in range(STICKER_NUM + 1):
+                if sticker_index != 4:
+                    internal_index = EXTERNAL_TO_INTERNAL[face_index][sticker_index]
+                    new_color = new_face[sticker_index]
+                    self.__set_color(face_index, internal_index, new_color)
+                
 
-            self.set_color(face_index, 0, new_face[0][0])
-            self.set_color(face_index, 1, new_face[0][1])
-            self.set_color(face_index, 2, new_face[0][2])
             
-            self.set_color(face_index, 7, new_face[1][0])
-            self.set_color(face_index, 3, new_face[1][2])
-            
-            self.set_color(face_index, 6, new_face[2][0])
-            self.set_color(face_index, 5, new_face[2][1])
-            self.set_color(face_index, 4, new_face[2][2])
-            
+    '''
+    args: face's index, sticker's index
+    return: sticker's color
+    '''
+    def get_color(self, face_index : int, sticker_index : int) -> int:
+
+        internal_sticker_index = EXTERNAL_TO_INTERNAL[face_index][sticker_index]
+        
+        if internal_sticker_index == STICKER_CENTER_INDEX:
+            return face_index
+        
+        return self.__get_color(face_index, internal_sticker_index)
+
     
+        
+    '''
+    args: face's index
+    return: true if the face is completed
+    '''
+    @cache
+    def is_face_completed(self, face_index : int) -> bool:
+        return (self.faces[face_index] == FACE_COMPLETENESS_MASK[face_index])
+
+    
+    '''
+    args:
+    return: true if the cube is completed
+    '''
+    @cache
+    def is_cube_completed(self) -> bool:
+        
+        for face_index in range(FACE_NUM-1):
+            if not self.is_face_completed(face_index):
+                return False;
+        return True
+
+
     '''
     args: face's index, clockwise rotating times
     return:
@@ -134,7 +173,6 @@ class Cube:
     def rotate(self, face_index, times):
 
         assert(0 <= times <= 4)
-
 
         #rotate face
         left_shift_bits = 2 * times * STICKER_BIT_SIZE
@@ -152,7 +190,7 @@ class Cube:
         for arr in adj_edges[face_index]:
             edges = []
             for sticker_index in arr[1:4]:
-                edges.append(self.get_color(arr[0], sticker_index))
+                edges.append(self.__get_color(arr[0], sticker_index))
 
             edges_lst.append(edges)
 
@@ -162,32 +200,9 @@ class Cube:
 
         for i in range(4):
             for j in range(3):
-                self.set_color(adj_edges[face_index][i][0], adj_edges[face_index][i][j+1], edges_lst[i][j])
+                self.__set_color(adj_edges[face_index][i][0], adj_edges[face_index][i][j+1], edges_lst[i][j])
 
 
-    '''
-    args: face's index
-    return: true if the face is completed
-    '''
-    @cache
-    def is_face_completed(self, face_index : int) -> bool:
-        return (self.faces[face_index] == FACE_COMPLETENESS_MASK[face_index])
-
-    
-    '''
-    args:
-    return: true if the cube is completed
-    '''
-    @cache
-    def is_cube_completed(self) -> bool:
-
-        for face_index in range(FACE_NUM-1):
-            if not self.is_face_completed(face_index):
-                return False;
-            
-        return True
-
-    
 
     '''
     args: face'index, placeholder string
@@ -197,18 +212,18 @@ class Cube:
     '''
     def print_face(self, face_index : int, placeholder : str):
         
-        print(placeholder + str(self.get_color(face_index, 0)), end = '')
+        print(placeholder + str(self.__get_color(face_index, 0)), end = '')
 
-        print(self.get_color(face_index, 1), end = '')
-        print(self.get_color(face_index, 2))
+        print(self.__get_color(face_index, 1), end = '')
+        print(self.__get_color(face_index, 2))
         
-        print(placeholder + str(self.get_color(face_index, 7)), end = '')
+        print(placeholder + str(self.__get_color(face_index, 7)), end = '')
         print(face_index, end = '')
-        print(self.get_color(face_index, 3))
+        print(self.__get_color(face_index, 3))
         
-        print(placeholder + str(self.get_color(face_index, 6)), end = '')
-        print(self.get_color(face_index, 5), end = '')
-        print(self.get_color(face_index, 4))
+        print(placeholder + str(self.__get_color(face_index, 6)), end = '')
+        print(self.__get_color(face_index, 5), end = '')
+        print(self.__get_color(face_index, 4))
 
 
     '''
@@ -220,46 +235,30 @@ class Cube:
     def print_cube(self):
         
         self.print_face(4, "   ")
- 
-        for i in range(3):
-            print(self.get_color(1, i), end = '')
-        for i in range(3):
-            print(self.get_color(0, i), end = '')
-        for i in range(3):
-            print(self.get_color(3, i), end = '')
+        
+
+        for face_index in [1, 0, 3]:
+            for sticker_index in range(3):
+                print(self.__get_color(face_index, sticker_index), end = '')
         print("")
 
         
-            
-        print(self.get_color(1, 7), end = '')
-        print(1, end = '')
-        print(self.get_color(1, 3), end = '')
-        
-        print(self.get_color(0, 7), end = '')
-        print(0, end = '')
-        print(self.get_color(0, 3), end = '')
-        
-        print(self.get_color(3, 7), end = '')
-        print(3, end = '')
-        print(self.get_color(3, 3))
-            
-        print(self.get_color(1, 6), end = '')
-        print(self.get_color(1, 5), end = '')
-        print(self.get_color(1, 4), end = '')
-        print(self.get_color(0, 6), end = '')
-        print(self.get_color(0, 5), end = '')
-        print(self.get_color(0, 4), end = '')
-        print(self.get_color(3, 6), end = '')
-        print(self.get_color(3, 5), end = '')
-        print(self.get_color(3, 4))
+        for face_index in [1, 0, 3]:
+            print(self.__get_color(face_index, 7), end = '')
+            print(face_index, end = '')
+            print(self.__get_color(face_index, 3), end = '')
+        print("")
 
         
+        for face_index in [1, 0, 3]:
+            for sticker_index in [6, 5, 4]:
+                print(self.__get_color(face_index, sticker_index), end = '')
+        print("")
+
         
         self.print_face(2, "   ")
         self.print_face(5, "   ")
-
         print("\n")
-
 
 
 
@@ -272,24 +271,26 @@ if __name__ == "__main__":
     begin = time.time()
     
     cube = Cube()
-
-    '''
-    cube.set_cube([
-    [[4, 5, 3], [2, 0, 2], [5, 2, 3]],
-    [[0, 1, 0], [4, 1, 5], [0, 0, 1]],
-    [[4, 0, 4], [3, 2, 5], [3, 4, 5]],
-    [[2, 0, 4], [1, 3, 1], [0, 1, 1]],
-    [[1, 2, 5], [4, 4, 4], [1, 3, 5]],
-    [[2, 5, 2], [3, 5, 0], [2, 3, 3]]
-    ])
-    '''
-
-
     cube.print_cube()
+
     
-    cube.rotate(DOWN, 3)
-    cube.rotate(UP, 3)
+    cube.set_cube(
+        [[0, 1, 2, 3, UP, 5, 6, 7, 8],
+        [0, 1, 2, 3, LEFT, 5, 6, 7, 8],
+        [0, 1, 2, 3, FRONT, 5, 6, 7, 8],
+        [0, 1, 2, 3, RIGHT, 5, 6, 7, 8],
+        [0, 1, 2, 3, BACK, 5, 6, 7, 8],
+        [0, 1, 2, 3, DOWN, 5, 6, 7, 8]])
     cube.print_cube()
+
+
+    for face in range(FACE_NUM):
+        
+        cube.rotate(face, 1)
+        cube.print_cube()
+        cube.rotate(face, 3)
+        cube.print_cube()
+        
     
     
     end = time.time()
