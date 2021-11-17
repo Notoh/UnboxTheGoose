@@ -2,8 +2,6 @@ import collections
 import time
 from functools import cache
 
-
-
 UP = 0
 LEFT = 1
 FRONT = 2
@@ -11,18 +9,13 @@ RIGHT = 3
 BACK = 4
 DOWN = 5
 
-
-
-
-
-
 FACE_NUM = 6
 STICKER_NUM = 8
 STICKER_CENTER_INDEX = 8
 STICKER_BIT_SIZE = 4
 STICKER_MASK = 15
 
-FACE_COMPLETENESS_MASK = [0,286331153,572662306,858993459,1145324612, 1431655765]
+FACE_COMPLETENESS_MASK = [0,286331153,572662306,858993459,1145324612,1431655765]
 
 #cube adj edges, [face_index, s1, s2, s3]
 adj_edges = [
@@ -66,7 +59,7 @@ EXTERNAL_TO_INTERNAL = [
 
 class Cube:
 
-    #an array of 32 bits interger
+    #an array of 32 bit intergers
     faces = []
 
 
@@ -101,10 +94,6 @@ class Cube:
         shift_bits = internal_sticker_index * STICKER_BIT_SIZE
         self.faces[face_index] &= ~(STICKER_MASK << shift_bits)
         self.faces[face_index] |= new_sticker_color << shift_bits
-
-            
-    
-    
 
 
     #Public Methods:
@@ -265,8 +254,6 @@ class Cube:
 
 
 
-    
-    
 
 if __name__ == "__main__":
     
