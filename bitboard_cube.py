@@ -248,7 +248,12 @@ class Cube:
             for j in range(3):
                 self.__set_color(adj_edges[face_index][i][0], adj_edges[face_index][i][j+1], edges_lst[i][j])
 
+    '''
+    args: side_count (2 or 3), [priority colour (which colour's face do you want), other 1 or 2 colours (based on corner vs side)]
+    return: [face_index of priority colour, external_index of priority colour]
 
+    Find the location of a specific piece on the cube.
+    '''
     def find_piece(self, side_count : int, colors : list[int]) -> list[int]:
         for face_index in FACE_NUM:
 
