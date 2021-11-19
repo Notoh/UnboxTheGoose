@@ -66,11 +66,8 @@ class Cube:
 
     def __init__(self):
 
-        self.faces = [0, 0, 0, 0, 0, 0] #M: can't we just set this array to FACE_COMPLETENESS_MASK ?
-
-        for face_index in range(FACE_NUM):
-            for i in range(STICKER_NUM):
-                self.faces[face_index] |= face_index << (i * STICKER_BIT_SIZE)
+        #set to solved configuration
+        self.faces = FACE_COMPLETENESS_MASK.copy()
 
 
 
