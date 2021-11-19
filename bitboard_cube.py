@@ -18,7 +18,7 @@ STICKER_MASK = 15
 
 FACE_COMPLETENESS_MASK = [0,286331153,572662306,858993459,1145324612,1431655765]
 
-#cube adj edges, [face_index, s1, s2, s3]
+#cube adj edges, [internal_face_index, s1, s2, s3]
 adj_edges = [
     #UP
     [
@@ -66,12 +66,11 @@ class Cube:
 
     def __init__(self):
 
-        self.faces = [0, 0, 0, 0, 0, 0]
+        self.faces = [0, 0, 0, 0, 0, 0] #M: can't we just set this array to FACE_COMPLETENESS_MASK ?
 
         for face_index in range(FACE_NUM):
             for i in range(STICKER_NUM):
                 self.faces[face_index] |= face_index << (i * STICKER_BIT_SIZE)
-
 
 
 
@@ -149,7 +148,7 @@ class Cube:
         
         for face_index in range(FACE_NUM-1):
             if not self.is_face_completed(face_index):
-                return False;
+                return False
         return True
 
 
@@ -160,7 +159,7 @@ class Cube:
     Rotating the stickers in a face clockwise
     '''
     #@cache
-    def rotate(self, face_index, times):
+    def rotate(self, face_index : int, times : int):
 
         assert(0 <= times <= 4)
 
@@ -177,7 +176,7 @@ class Cube:
         print(bin(self.faces[face_index]))
 
 
-        #rotate adjcent edges
+        #collect adjacent edges to rotate
         edges_lst = collections.deque()
 
         for arr in adj_edges[face_index]:
