@@ -11,7 +11,8 @@ DOWN = 5
 
 FACE_NUM = 6
 STICKER_NUM = 8
-STICKER_CENTER_INDEX = 8
+STICKER_CENTER_EXTERNAL_INDEX = 4
+STICKER_CENTER_INTERNAL_INDEX = 8
 STICKER_BIT_SIZE = 4
 STICKER_MASK = 15
 
@@ -105,10 +106,10 @@ class Cube:
     def set_cube(self, new_cube):
 
         for new_face in new_cube:
-            face_index = new_face[4]
+            face_index = new_face[STICKER_EXTERNAL_INDEX]
 
             for sticker_index in range(STICKER_NUM + 1):
-                if sticker_index != 4:
+                if sticker_index != STICKER_EXTERNAL_INDEX:
                     internal_index = EXTERNAL_TO_INTERNAL[face_index][sticker_index]
                     new_color = new_face[sticker_index]
                     self.__set_color(face_index, internal_index, new_color)
@@ -123,7 +124,7 @@ class Cube:
 
         internal_sticker_index = EXTERNAL_TO_INTERNAL[face_index][sticker_index]
         
-        if internal_sticker_index == STICKER_CENTER_INDEX:
+        if internal_sticker_index == STICKER_CENTER_INTERNAL_INDEX:
             return face_index
         
         return self.__get_color(face_index, internal_sticker_index)
@@ -293,6 +294,8 @@ if __name__ == "__main__":
     cube.print_cube()
     cube.rotate(LEFT, 1)
     cube.print_cube()
+
+    cube.get_color(UP, 2)
     
     #UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
     
