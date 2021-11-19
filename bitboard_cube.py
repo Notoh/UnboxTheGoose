@@ -46,6 +46,34 @@ adj_edges = [
     ]
 ]
 
+# for each face, there is 1 subarray for each corner, with indices: 0,2,4,6
+#in the sub array, it says the face number and internal_index of the sticker of the same cubie x2 (as there are two adjacent stickers on different faces)
+adj_corner = [
+    #UP
+    [
+        [1, 2, 4, 6], [4, 4, 3, 0], [3, 6, 2, 2], [2, 0, 1, 4]
+    ],
+    #LEFT
+    [
+        [4, 0, 5, 6], [0, 0, 4, 6], [0, 6, 2, 0], [2, 6, 5, 0]
+    ],
+    #FRONT
+    [
+        [0, 6, 1, 4], [0, 4, 3, 6], [5, 2, 3, 4], [5, 0, 1, 6]
+    ],
+    #RIGHT
+    [
+        [0, 2, 4, 4], [4, 2, 5, 4], [2, 4, 5, 2], [0, 4, 2, 2]
+    ],
+    #BACK
+    [
+        [1, 0, 5, 6], [3, 2, 5, 4], [0, 2, 3, 0], [0, 0, 1, 2]
+    ],
+    #DOWN
+    [
+        [2, 6, 1, 6], [2, 4, 3, 4], [3, 2, 4, 2], [1, 0, 4, 0]
+    ]
+]
 
 #cube orientation, index 8 is the center sticker
 EXTERNAL_TO_INTERNAL = [
@@ -190,6 +218,30 @@ class Cube:
         for i in range(4):
             for j in range(3):
                 self.__set_color(adj_edges[face_index][i][0], adj_edges[face_index][i][j+1], edges_lst[i][j])
+
+
+    def find_piece(self, side_count : int, colors : list[int]) -> list[int]:
+        for face_index in FACE_NUM:
+
+            #hunting for corner location
+            if (side_count == 3):
+                for target_color_external_index in [0,2,6,8]: #corners are always on even external indices, excluding the middle 4
+
+                    #see if a corner has the right target color
+                    if (self.get_color(face_index,target_color_external_index) == colors[0]):
+
+                        #check if the other two stickers on the corner cubie are the right colours
+                        internal_sticker_corner_index = (EXTERNAL_TO_INTERNAL[face_index][target_color_external_index]) / 2
+                        neighbour_sticker_color_one = self.__get_color(adj_corners[face_index][0],adj_corners[face_index][1])
+                        neighbour_sticker_color_two = self.__get_color(adj_corners[face_index][2],adj_corners[face_index][3])
+
+                        #compare the colours
+                        if ((neighbour_sticker_color_one == colors[1] and neighbour_sticker_color_two == colors[2]) or (neighbour_sticker_color_one == colors[2] and neighbour_sticker_color_two == colors[1])):
+                            return [face_index, target_color_external_index]
+
+            #hunting for corner location
+            if (side_count == 2):
+
 
 
 
