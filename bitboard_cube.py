@@ -105,10 +105,10 @@ class Cube:
     def set_cube(self, new_cube):
 
         for new_face in new_cube:
-            face_index = new_face[STICKER_EXTERNAL_INDEX]
+            face_index = new_face[STICKER_CENTER_EXTERNAL_INDEX]
 
             for sticker_index in range(STICKER_NUM + 1):
-                if sticker_index != STICKER_EXTERNAL_INDEX:
+                if sticker_index != STICKER_CENTER_EXTERNAL_INDEX:
                     internal_index = EXTERNAL_TO_INTERNAL[face_index][sticker_index]
                     new_color = new_face[sticker_index]
                     self.__set_color(face_index, internal_index, new_color)
