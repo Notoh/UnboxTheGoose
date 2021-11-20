@@ -282,7 +282,7 @@ class Cube:
 
                         #check if the other sticker on the cubie is the right colour. This index is for the adj_side list.
                         internal_sticker_side_index = (int)((EXTERNAL_TO_INTERNAL[face_index][target_color_external_index] - 1) / 2)
-                        neighbour_sticker_color = self.__get_color(adj_side[face_index][internal_sticker_corner_index][0], adj_side[face_index][internal_sticker_corner_index][1])
+                        neighbour_sticker_color = self.__get_color(adj_side[face_index][internal_sticker_side_index][0], adj_side[face_index][internal_sticker_side_index][1])
                         
                         #compare the colour
                         if (neighbour_sticker_color == colors[1]):
@@ -290,7 +290,17 @@ class Cube:
         
         #return an error list when the corner was not found. Either broken code or invalid input
         return [-1,-1]
+    
+    '''
+    args:  [priority colour (which colour's face do you want), other 1 or 2 colours (based on corner vs side)]
+    return: [face_index of priority colour, external_index of priority colour]
 
+    Find the location of a specific piece on the cube.
+    
+    def find_piece(self, colors: list[int]) -> list[int]:
+        side_count = len(colors)
+        return self.find_piece(side_count, colors)
+    '''
 
     '''
     args: face'index, placeholder string
@@ -357,7 +367,7 @@ if __name__ == "__main__":
     begin = time.time()
     
     cube = Cube()
-    cube.print_cube()
+    '''cube.print_cube()
     
     
     cube.rotate(RIGHT, 3)
@@ -389,10 +399,10 @@ if __name__ == "__main__":
     cube.rotate(LEFT, 1)
     cube.print_cube()
 
-    cube.get_color(UP, 2)
+    cube.get_color(UP, 2)'''
     
     #UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
     
-    print(cube.find_piece(3,[0,1,2]))
+    print(cube.find_piece(2,[3,1]))
     end = time.time()
     print(end - begin)
