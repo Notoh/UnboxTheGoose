@@ -110,7 +110,7 @@ EXTERNAL_TO_INTERNAL = [
     [0, 1, 2, 7, 8, 3, 6, 5, 4],#FRONT
     [6, 7, 0, 5, 8, 1, 4, 3, 2],#RIGHT
     [4, 5, 6, 3, 8, 7, 2, 1, 0],#BACK
-    [0, 1, 2, 7, 8, 3, 6, 5, 4]#DOWN
+    [2, 3, 4, 1, 8, 5, 0, 7, 6]#DOWN
 ]
 
 
@@ -359,13 +359,54 @@ class Cube:
 
 
 
-
 if __name__ == "__main__":
     
     print("Test:")
     begin = time.time()
     
     cube = Cube()
+    cube.print_cube()
+    '''cube.set_cube([
+        [4, 5, 3, 2, 0, 2, 5, 2, 3],
+        [0, 1, 0, 4, 1, 5, 0, 0, 1],
+        [4, 0, 4, 3, 2, 5, 3, 4, 5],
+        [2, 0, 4, 1, 3, 1, 0, 1, 1],
+        [1, 2, 5, 4, 4, 4, 1, 3, 5],
+        [2, 5, 2, 3, 5, 0, 2, 3, 3]
+    ])'''
+    cube.set_cube([
+        [4, 5, 3, 2, 0, 2, 5, 2, 3],
+        [0, 5, 1, 1, 1, 0, 0, 4, 0],
+        [4, 0, 4, 3, 2, 5, 3, 4, 5],
+        [0, 1, 2, 1, 3, 0, 1, 1, 4],
+        [5, 3, 1, 4, 4, 4, 5, 2, 1],
+        [2, 0, 3, 5, 5, 3, 2, 3, 2]
+    ])
+
+    cube.print_cube()
+    #solutionToAbove = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
+    trans = {"U": 0, "L": 1, "F": 2, "R": 3, "B": 4, "D": 5}
+    solutionMoveSet = [
+        ["B", 2], ["L", 2], ["D", 2], ["B", 2], ["D", 3], ["F", 2], ["R", 2], ["U", 2], ["R", 2], ["D", 3],
+        ["U", 3], ["B", 1], ["L", 1], ["U", 2], ["B", 1], ["U", 1], ["B", 2], ["F", 3], ["R", 2], ["U", 2]
+    ]
+    for value in range(0, 20):
+        cube.rotate(trans[solutionMoveSet[value][0]], solutionMoveSet[value][1])
+    cube.print_cube()
+    '''testCube = Cube(
+        [[4, 5, 3], [2, 0, 2], [5, 2, 3]],
+        [[0, 1, 0], [4, 1, 5], [0, 0, 1]],
+        [[4, 0, 4], [3, 2, 5], [3, 4, 5]],
+        [[2, 0, 4], [1, 3, 1], [0, 1, 1]],
+        [[1, 2, 5], [4, 4, 4], [1, 3, 5]],
+        [[2, 5, 2], [3, 5, 0], [2, 3, 3]]
+    )
+    testCube.print()
+
+    for value in range(0, 20):
+        cycle(testCube, trans[solutionMoveSet[value][0]], solutionMoveSet[value][1])
+
+    testCube.print()'''
     
     #UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
     
