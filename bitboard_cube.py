@@ -383,8 +383,10 @@ if __name__ == "__main__":
         [2, 0, 3, 5, 5, 3, 2, 3, 2]
     ])
 
+    scrambleForAbove = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
+    solutionToAbove = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
+
     cube.print_cube()
-    #solutionToAbove = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
     trans = {"U": 0, "L": 1, "F": 2, "R": 3, "B": 4, "D": 5}
     solutionMoveSet = [
         ["B", 2], ["L", 2], ["D", 2], ["B", 2], ["D", 3], ["F", 2], ["R", 2], ["U", 2], ["R", 2], ["D", 3],
