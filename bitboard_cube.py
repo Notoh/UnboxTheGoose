@@ -1,6 +1,5 @@
 import collections
 import time
-from functools import cache
 
 UP = 0
 LEFT = 1
@@ -219,7 +218,7 @@ class Cube:
 
         #rotate face
         left_shift_bits = 2 * times * STICKER_BIT_SIZE
-        right_shift_bits = 32 - left_shift_bits;
+        right_shift_bits = 32 - left_shift_bits
 
         left_bits = (self.faces[face_index] << left_shift_bits) & ((1 << 32) - 1)
         right_bits = self.faces[face_index] >> right_shift_bits
@@ -254,7 +253,7 @@ class Cube:
 
     Find the location of a specific piece on the cube.
     '''
-    def find_piece(self, side_count : int, colors : list[int]) -> list[int]:
+    def find_piece(self, side_count : int, colors):
         for face_index in range(FACE_NUM):
 
             #hunting for corner location
@@ -273,9 +272,9 @@ class Cube:
                         if ((neighbour_sticker_color_one == colors[1] and neighbour_sticker_color_two == colors[2]) or (neighbour_sticker_color_one == colors[2] and neighbour_sticker_color_two == colors[1])):
                             return list([face_index, target_color_external_index])
 
-            #hunting for corner location
+            #hunting for edge location
             if (side_count == 2):
-                for target_color_external_index in [1,3,5,7]: #corners are always on odd external indices
+                for target_color_external_index in [1,3,5,7]: #edges are always on odd external indices
 
                     #see if a side piece has the right target color
                     if (self.get_color(face_index,target_color_external_index) == colors[0]):
@@ -289,7 +288,7 @@ class Cube:
                             return list([face_index, target_color_external_index])
         
         #return an error list when the corner was not found. Either broken code or invalid input
-        return [-1,-1]
+        return [-1, -1]
     
     '''
     args:  [priority colour (which colour's face do you want), other 1 or 2 colours (based on corner vs side)]
@@ -367,6 +366,13 @@ if __name__ == "__main__":
     begin = time.time()
     
     cube = Cube()
+    
+    #UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
+    
+    print(cube.find_piece(2, [3,2]))
+    end = time.time()
+    print(end - begin)
+
     '''cube.print_cube()
     
     
@@ -401,8 +407,4 @@ if __name__ == "__main__":
 
     cube.get_color(UP, 2)'''
     
-    #UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
     
-    print(cube.find_piece(2,[3,1]))
-    end = time.time()
-    print(end - begin)
