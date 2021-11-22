@@ -8,6 +8,8 @@ RIGHT = 3
 BACK = 4
 DOWN = 5
 
+TRANSLATE_FACE = {"U": UP, "L": LEFT, "F": FRONT, "R": RIGHT, "B": BACK, "D": DOWN}
+
 FACE_NUM = 6
 STICKER_NUM = 8
 STICKER_CENTER_EXTERNAL_INDEX = 4
@@ -16,6 +18,8 @@ STICKER_BIT_SIZE = 4
 STICKER_MASK = 15
 
 FACE_COMPLETENESS_MASK = [0,286331153,572662306,858993459,1145324612,1431655765]
+
+PROCESS_DIRECTION = {"'": 3, "2": 2}
 
 #cube adj edges, [internal_face_index, s1, s2, s3]
 adj_edges = [
@@ -110,7 +114,7 @@ EXTERNAL_TO_INTERNAL = [
     [0, 1, 2, 7, 8, 3, 6, 5, 4],#FRONT
     [6, 7, 0, 5, 8, 1, 4, 3, 2],#RIGHT
     [4, 5, 6, 3, 8, 7, 2, 1, 0],#BACK
-    [2, 3, 4, 1, 8, 5, 0, 7, 6]#DOWN
+    [0, 1, 2, 7, 8, 3, 6, 5, 4]#DOWN
 ]
 
 
@@ -226,7 +230,7 @@ class Cube:
         self.faces[face_index] = left_bits | right_bits
 
 
-        print(bin(self.faces[face_index]))
+        # print(bin(self.faces[face_index]))
 
 
         #collect adjacent edges to rotate
@@ -357,44 +361,165 @@ class Cube:
         self.print_face(5, "   ")
         print("\n")
 
+    '''
+    args: string of moves
 
+    Executes the moves passed to it, replacing any U, U', or U2 with the correct move set.
+    '''
+    def do_moves(self, moves, inverse = False):
+        moves = moves.split()
+        moves = list(map(lambda m: [m, 1] if len(m) == 1 else [m[0], PROCESS_DIRECTION[m[1]]], moves))
+        for move in moves:
+            if (not(inverse)):
+                if (move[0] != ""):
+                    self.rotate(TRANSLATE_FACE[move[0]], move[1])
+            else:
+                if (move[0] != ""):
+                    move[1] = move[1] * -1 + 4
+        if (inverse):
+            for move in reversed(moves):
+                if (move[0] != ""):
+                    self.rotate(TRANSLATE_FACE[move[0]], move[1])
+    
+    '''
+    Returns (and performs) the moves required to solve PLL
+    '''
+    def solve_PLL(self):
+        for adjust in ["", "U", "U'", "U2"]:
+            self.do_moves(adjust)
+            for PLLalg in PLL:
+                self.do_moves(PLL[PLLalg])
+                for auf in ["", "U", "U'", "U2"]:
+                    self.do_moves(auf)
+                    if (self.is_cube_completed()):
+                        return adjust + " " + PLL[PLLalg] + " " + auf 
+                    self.do_moves(auf, True)
+                self.do_moves(PLL[PLLalg], True)
+            self.do_moves(adjust, True)
+        return False # If this happens, cube is not at PLL yet.
+
+
+''' ALGORITHMS! '''
+
+# resource: https://www.speedsolving.com/wiki/index.php/PLL
+# resource 2: http://algdb.net/puzzle/333/pll
+
+PLL = {
+    "Skip": "", # Skip
+    "Aa": "R' F R' B2 R F' R' B2 R2", # Aa
+    "Ab": "R2 B2 R F R' B2 R F' R", # Ab
+    "E": "R B' R' F R B R' F' R B R' F R B' R' F'", # E
+    "F": "R' U R U' R2 F' U' F U R F R' F' R2", # F
+    "Ga": "R L U2 R' L' B' U F' U2 B U' F", # Ga
+    "Gb": "F' U B' U2 F U' B L R U2 L' R'", # Gb
+    "Gc": "L' R' U2 L R F U' B U2 F' U B'", # Gc
+    "Gd": "B U' F U2 B' U F' R' L' U2 R L", # Gd
+    "H": "L R U2 L' R' F' B' U2 F B", # H
+    "Ja": "R U' L' U R' U2 L U' L' U2' L", # Ja
+    "Jb": "L' U R U' L U2 R' U R U2 R'", # Jb
+    "Na": "R U' L U2 R' U L' R U' L U2 R' U L'", # Na
+    "Nb": "R' U L' U2 R U' L R' U L' U2 R U' L", # Nb
+    "Ra": "F2 L2 U F U F' U' F' U' L2 F' U F' U'", # Ra
+    "Rb": "R' U2 R U2 R' F R U R' U' R' F' R2", # Rb
+    "T": "F R U' R' U R U R2 F' R U R U' R'", # T
+    "Ua": "R2 U' R' U' R U R U R U' R", # Ua
+    "Ub": "R' U R' U' R' U' R' U R U R2", # Ub
+    "V": "R' U R' U' B' R' B2 U' B' U B' R B R", # V
+    "Y": "F R' F R2 U' R' U' R U R' F' R U R' U' F'", # Y
+    "Z": "R U R' U R' U' R' U R U' R' U' R2 U R" # Z
+}
+
+# resource: https://www.speedsolving.com/wiki/index.php/OLL
+
+OLL = {
+    "Skip": "",
+    "1": "R U B' R B R2 U' R' F R F'",
+    "2": "F R' F' R U R2 B' R' B U' R'",
+    "3": "",
+    "4": "",
+    "5": "R' F2 L F L' F R",
+    "6": "",
+    "7": "B L F' L F L2 B'",
+    "8": "R U2 R' U2 R' F R F'",
+    "9": "R' U' R U' R' U R' F R F' U R",
+    "10": "R U R' U R' F R F' R U2 R'",
+    "11": "",
+    "12": "F R U R' U' F' U F R U R' U' F'",
+    "13": "F U R U2 R' U' R U R' F'",
+    "14": "F' U' L' U2 L U L' U' L F",
+    "15": "R' F' R L' U' L U R' F R",
+    "16": "",
+    "17": "R U R' U R' F R F' U2 R' F R F'",
+    "18": "",
+    "19": "",
+    "20": "R2 U2 R' F2 U2 R2 F' R2 U2 F2 R U2 R2 U'",
+    "21": "R U R' U R U' R' U R U2 R'",
+    "22": "R U2 R2' U' R2 U' R2' U2 R",
+    "23": "R' U2 R F U' R' U' R U F'",
+    "24": "L F R' F' L' F R F'",
+    "25": "R' F R B' R' F' R B",
+    "26": "R U2 R' U' R U' R'",
+    "27": "R U R' U R U2 R'",
+    "28": "R2 F2 L F L' F2 R F' R",
+    "29": "R2' U' R F R' U R2' U' R' F' R",
+    "30": "F' L U L2 U L2 U2 L' U F",
+    "31": "R' U' F U R U' R' F' R",
+    "32": "R U B' U' R' U R B R'",
+    "33": "R U R' U' R' F R F'",
+    "34": "R U R2 U' R' F R U R U' F'",
+    "35": "R U2 R2' F R F' R U2 R'",
+    "36": "R U R' U' F' U2 F U R U R'",
+    "37": "R' F R F' U' F' U F",
+    "38": "L U L' U L U' L' U' L' B L B'",
+    "39": "L F' L' U' L U F U' L'",
+    "40": "R' F R U R' U' F' U R",
+    "41": "F U R U' R' F' R' U2 R U R' U R",
+    "42": "R' U' R U' R' U2 R F R U R' U' F'",
+    "43": "R' U' F' U F R",
+    "44": "F U R U' R' F'",
+    "45": "F R U R' U' F'",
+    "46": "R' U' R' F R F' U R",
+    "47": "F' L' U' L U L' U' L U F",
+    "48": "F R U R' U' R U R' U' F'",
+    "49": "R B' R2 F R2 B R2 F' R",
+    "50": "R' F R2 B' R2 F' R2 B R'",
+    "51": "F U R U' R' U R U' R' F'",
+    "52": "R' U' R U' R' U F' U F R",
+    "53": "",
+    "54": "F R' F' R U2 F2 L F L' F",
+    "55": "R' U' F R' F' R F U R U' R' F' R",
+    "56": "L F L' U R U' R' U R U' R' L F' L'",
+    "57": ""
+}
+
+UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
+scrambleForSample = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
+solutionToSample = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
 
 if __name__ == "__main__":
-    
     print("Test:")
     begin = time.time()
     
     cube = Cube()
-    cube.print_cube()
-    '''cube.set_cube([
-        [4, 5, 3, 2, 0, 2, 5, 2, 3],
-        [0, 1, 0, 4, 1, 5, 0, 0, 1],
-        [4, 0, 4, 3, 2, 5, 3, 4, 5],
-        [2, 0, 4, 1, 3, 1, 0, 1, 1],
-        [1, 2, 5, 4, 4, 4, 1, 3, 5],
-        [2, 5, 2, 3, 5, 0, 2, 3, 3]
-    ])'''
     cube.set_cube([
         [4, 5, 3, 2, 0, 2, 5, 2, 3],
         [0, 5, 1, 1, 1, 0, 0, 4, 0],
         [4, 0, 4, 3, 2, 5, 3, 4, 5],
         [0, 1, 2, 1, 3, 0, 1, 1, 4],
         [5, 3, 1, 4, 4, 4, 5, 2, 1],
-        [2, 0, 3, 5, 5, 3, 2, 3, 2]
+        [2, 5, 2, 3, 5, 0, 2, 3, 3]
     ])
 
-    scrambleForAbove = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
-    solutionToAbove = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
+    cube.do_moves(solutionToSample)
+
+    cube.do_moves("   " + PLL["Skip"] + " U2")
 
     cube.print_cube()
-    trans = {"U": 0, "L": 1, "F": 2, "R": 3, "B": 4, "D": 5}
-    solutionMoveSet = [
-        ["B", 2], ["L", 2], ["D", 2], ["B", 2], ["D", 3], ["F", 2], ["R", 2], ["U", 2], ["R", 2], ["D", 3],
-        ["U", 3], ["B", 1], ["L", 1], ["U", 2], ["B", 1], ["U", 1], ["B", 2], ["F", 3], ["R", 2], ["U", 2]
-    ]
-    for value in range(0, 20):
-        cube.rotate(trans[solutionMoveSet[value][0]], solutionMoveSet[value][1])
+
+    print("Required Moves to solve PLL: " + str(cube.solve_PLL()))
+
     cube.print_cube()
+
     '''testCube = Cube(
         [[4, 5, 3], [2, 0, 2], [5, 2, 3]],
         [[0, 1, 0], [4, 1, 5], [0, 0, 1]],
@@ -410,11 +535,10 @@ if __name__ == "__main__":
 
     testCube.print()'''
     
-    #UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
     
-    print(cube.find_piece(2, [3,2]))
+    #print(cube.find_piece(2, [3,2]))
     end = time.time()
-    print(end - begin)
+    print("Total Time this took: " + str(end - begin) + "seconds")
 
     '''cube.print_cube()
     
