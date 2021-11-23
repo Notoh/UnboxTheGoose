@@ -420,6 +420,74 @@ class Cube:
         PLLSolution = self.solve_PLL()
         if (OLLSolution != False and PLLSolution != False): return OLLSolution + " " + PLLSolution
         return False # If this happens, cube is not at LL yet.
+    
+    '''
+    Returns (and performs) the moves required to solve the Cross.
+    '''
+    def solve_Cross(self):
+        # edges: [1, 2, 3, 4]
+        edges = [self.find_piece(2, [1, 5]), self.find_piece(2, [2, 5]), self.find_piece(2, [3, 5]), self.find_piece(2, [4, 5])]
+        solved = list(map(lambda i: True if (edges[i][0] == i + 1 and edges[i][1] == 7) else False, range(4)))
+        solve_options = list()
+        for i in range(4):
+            if not(solved[i]):
+                solve_options.push(self.search_n_moves(3, 3, self.cross_piece_solved, i + 1))
+                #print("To solve piece " + str(i + 1) + ", we do:  " + moves_to_solve[0] + "  (" + str(moves_to_solve[1] + 1) + " move[s])\n")
+        '''matched = False
+        for i in range(3):
+            for j in range(4):
+                if not(solved[j]):
+                    if (solve_options[j][1] == i):
+                        self.do_moves(solve_options[k][1])'''
+        return solved
+    
+    def cross_piece_solved(self, edge_color):
+        piece = self.find_piece(2, [edge_color, 5])
+        return True if (piece[0] == edge_color and piece[1] == 7) else False
+
+    def search_n_moves(self, initial_n, curr_n, checker, checkerParams, totalMoves = ""):
+        if (curr_n < 0 or checker(checkerParams)):
+            return [totalMoves, initial_n - curr_n - 1]
+        else:
+            move_options = list()
+            smallest = initial_n - curr_n
+            for move in MOVES:
+                self.do_moves(move)
+                move_option = self.search_n_moves(initial_n, curr_n - 1, checker, checkerParams, totalMoves + " " + move)
+                '''Below code could save us a tonne of time...'''
+                #if smallest == move_option[1]:
+                #    self.do_moves(move, True)
+                #    return move_option
+                move_options.append(move_option)
+                self.do_moves(move, True)
+            while smallest <= initial_n:
+                for option in move_options:
+                    if option[1] == smallest: return option
+                smallest += 1
+            return ["", -1]
+            
+
+                
+            
+            
+
+
+
+
+'''
+Test 1276 Last Layer positions! (starts on a solved cube)
+'''
+def test1276(cube):
+    for OLLalg in OLL:
+        cube.do_moves(OLL[OLLalg])
+        cube.do_moves("U")
+        for PLLalg in PLL:
+            cube.do_moves(PLL[PLLalg])
+            #print("\n" + OLLalg + " + " + PLLalg + "\n")
+            solved = cube.solve_LL()
+            if (solved == False): return False
+            #cube.print_cube()
+    return True
 
 ''' ALGORITHMS! '''
 
@@ -514,25 +582,11 @@ OLL = {
     "57": "R U R' U' R' L F R F' L'"
 }
 
+MOVES = ["U", "U2", "U'", "L", "L2", "L'", "F", "F2", "F'", "R", "R2", "R'", "B", "B2", "B'"]
+
 UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
 scrambleForSample = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
 solutionToSample = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
-
-'''
-Test 1276 Last Layer positions! (starts on a solved cube)
-'''
-def test1276(cube):
-    for OLLalg in OLL:
-        cube.do_moves(OLL[OLLalg])
-        cube.do_moves("U")
-        for PLLalg in PLL:
-            cube.do_moves(PLL[PLLalg])
-            print("\n" + OLLalg + " + " + PLLalg + "\n")
-            cube.solve_OLL()
-            solved = cube.solve_PLL()
-            if (solved == False): return False
-            cube.print_cube()
-    return True
 
 if __name__ == "__main__":
     print("Test:")
@@ -548,68 +602,23 @@ if __name__ == "__main__":
         [2, 5, 2, 3, 5, 0, 2, 3, 3]
     ])
 
-    cube.do_moves(solutionToSample)
-    # The cube is solved now lol :)
+    #cube.do_moves("F2 L U R2 F' U B2")
+
+    crossSolution = cube.solve_Cross()
+    print("\nCross solution: " + str(crossSolution))
+    cube.print_cube()
+
+    #cube.do_moves(solutionToSample)
     
+
+    '''
     YAY = test1276(cube)
 
     if (YAY == True): print("\nHOLY MACKEREL!\n")
     else: print("\nrip i suck")
+    '''
     
-
-
-    '''testCube = Cube(
-        [[4, 5, 3], [2, 0, 2], [5, 2, 3]],
-        [[0, 1, 0], [4, 1, 5], [0, 0, 1]],
-        [[4, 0, 4], [3, 2, 5], [3, 4, 5]],
-        [[2, 0, 4], [1, 3, 1], [0, 1, 1]],
-        [[1, 2, 5], [4, 4, 4], [1, 3, 5]],
-        [[2, 5, 2], [3, 5, 0], [2, 3, 3]]
-    )
-    testCube.print()
-
-    for value in range(0, 20):
-        cycle(testCube, trans[solutionMoveSet[value][0]], solutionMoveSet[value][1])
-
-    testCube.print()'''
-    
-    
-    #print(cube.find_piece(2, [3,2]))
+    print(cube.find_piece(2, [3,2]))
     end = time.time()
     print("Total Time this took: " + str(end - begin) + "seconds")
 
-    '''cube.print_cube()
-    
-    
-    cube.rotate(RIGHT, 3)
-    cube.print_cube()
-    cube.rotate(LEFT, 3)
-    cube.print_cube()
-    cube.rotate(FRONT, 2)
-    cube.print_cube()
-    cube.rotate(BACK, 2)
-    cube.print_cube()
-    cube.rotate(RIGHT, 1)
-    cube.print_cube()
-    cube.rotate(LEFT, 1)
-    cube.print_cube()
-    cube.rotate(DOWN, 1)
-    cube.print_cube()
-
-    
-    cube.rotate(RIGHT, 3)
-    cube.print_cube()
-    cube.rotate(LEFT, 3)
-    cube.print_cube()
-    cube.rotate(FRONT, 2)
-    cube.print_cube()
-    cube.rotate(BACK, 2)
-    cube.print_cube()
-    cube.rotate(RIGHT, 1)
-    cube.print_cube()
-    cube.rotate(LEFT, 1)
-    cube.print_cube()
-
-    cube.get_color(UP, 2)'''
-    
-    
