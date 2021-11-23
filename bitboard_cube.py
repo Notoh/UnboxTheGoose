@@ -398,6 +398,28 @@ class Cube:
             self.do_moves(adjust, True)
         return False # If this happens, cube is not at PLL yet.
 
+    '''
+    Returns (and performs) the moves required to solve OLL
+    '''
+    def solve_OLL(self):
+        for adjust in ["", "U", "U'", "U2"]:
+            self.do_moves(adjust)
+            for OLLalg in OLL:
+                self.do_moves(OLL[OLLalg])
+                if (self.is_face_completed(UP)):
+                    return adjust + " " + OLL[OLLalg]
+                self.do_moves(OLL[OLLalg], True)
+            self.do_moves(adjust, True)
+        return False # If this happens, cube is not at OLL yet.
+
+    '''
+    Returns (and performs) the moves required to solve the whole Last Layer!!!
+    '''
+    def solve_LL(self):
+        OLLSolution = self.solve_OLL()
+        PLLSolution = self.solve_PLL()
+        if (OLLSolution != False and PLLSolution != False): return OLLSolution + " " + PLLSolution
+        return False # If this happens, cube is not at LL yet.
 
 ''' ALGORITHMS! '''
 
@@ -435,24 +457,24 @@ OLL = {
     "Skip": "",
     "1": "R U B' R B R2 U' R' F R F'",
     "2": "F R' F' R U R2 B' R' B U' R'",
-    "3": "",
-    "4": "",
+    "3": "B U L U' L' B' U' F R U R' U' F'",
+    "4": "F U R U' R' F' U B L U L' U' B'",
     "5": "R' F2 L F L' F R",
-    "6": "",
+    "6": "L F2 R' F' R F' L'",
     "7": "B L F' L F L2 B'",
     "8": "R U2 R' U2 R' F R F'",
     "9": "R' U' R U' R' U R' F R F' U R",
     "10": "R U R' U R' F R F' R U2 R'",
-    "11": "",
+    "11": "F' L' U' L U F R B U B' U' R'",
     "12": "F R U R' U' F' U F R U R' U' F'",
     "13": "F U R U2 R' U' R U R' F'",
     "14": "F' U' L' U2 L U L' U' L F",
     "15": "R' F' R L' U' L U R' F R",
-    "16": "",
+    "16": "R B R' L U L' U' R B' R'",
     "17": "R U R' U R' F R F' U2 R' F R F'",
-    "18": "",
-    "19": "",
-    "20": "R2 U2 R' F2 U2 R2 F' R2 U2 F2 R U2 R2 U'",
+    "18": "F R U R' U F' U2 F' L F L'",
+    "19": "L' R B R B R' B' L R2 F R F'",
+    "20": "L' R' F' U2 L2 U2 L2 U2 L2 F L R",
     "21": "R U R' U R U' R' U R U2 R'",
     "22": "R U2 R2' U' R2 U' R2' U2 R",
     "23": "R' U2 R F U' R' U' R U F'",
@@ -485,16 +507,32 @@ OLL = {
     "50": "R' F R2 B' R2 F' R2 B R'",
     "51": "F U R U' R' U R U' R' F'",
     "52": "R' U' R U' R' U F' U F R",
-    "53": "",
+    "53": "R' F' L F' L' F L F' L' F2 R",
     "54": "F R' F' R U2 F2 L F L' F",
     "55": "R' U' F R' F' R F U R U' R' F' R",
     "56": "L F L' U R U' R' U R U' R' L F' L'",
-    "57": ""
+    "57": "R U R' U' R' L F R F' L'"
 }
 
 UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
 scrambleForSample = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
 solutionToSample = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
+
+'''
+Test 1276 Last Layer positions! (starts on a solved cube)
+'''
+def test1276(cube):
+    for OLLalg in OLL:
+        cube.do_moves(OLL[OLLalg])
+        cube.do_moves("U")
+        for PLLalg in PLL:
+            cube.do_moves(PLL[PLLalg])
+            print("\n" + OLLalg + " + " + PLLalg + "\n")
+            cube.solve_OLL()
+            solved = cube.solve_PLL()
+            if (solved == False): return False
+            cube.print_cube()
+    return True
 
 if __name__ == "__main__":
     print("Test:")
@@ -511,14 +549,14 @@ if __name__ == "__main__":
     ])
 
     cube.do_moves(solutionToSample)
+    # The cube is solved now lol :)
+    
+    YAY = test1276(cube)
 
-    cube.do_moves("   " + PLL["Skip"] + " U2")
+    if (YAY == True): print("\n    HOLY MACKEREL!")
+    else: print("\n    rip i suck")
+    
 
-    cube.print_cube()
-
-    print("Required Moves to solve PLL: " + str(cube.solve_PLL()))
-
-    cube.print_cube()
 
     '''testCube = Cube(
         [[4, 5, 3], [2, 0, 2], [5, 2, 3]],
