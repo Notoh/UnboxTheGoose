@@ -553,8 +553,8 @@ if __name__ == "__main__":
     
     YAY = test1276(cube)
 
-    if (YAY == True): print("\n    HOLY MACKEREL!")
-    else: print("\n    rip i suck")
+    if (YAY == True): print("\nHOLY MACKEREL!\n")
+    else: print("\nrip i suck")
     
 
 
