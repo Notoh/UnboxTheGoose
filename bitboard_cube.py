@@ -420,51 +420,51 @@ class Cube:
         PLLSolution = self.solve_PLL()
         if (OLLSolution != False and PLLSolution != False): return OLLSolution + " " + PLLSolution
         return False # If this happens, cube is not at LL yet.
+            
+    def cross_piece_solved(self, edge_color):
+        piece = self.find_piece(2, [edge_color, 5])
+        return True if (piece[0] == edge_color and piece[1] == 7) else False
+        
+    def orient_cross_alg(self, alg, n):
+        if (n <= 0): return alg
+        alg = list(map(lambda move: MOVE_MAP[move], alg.split()))
+        alg = ' '.join(alg)
+        if (n == 1): return alg
+        else: return self.orient_cross_alg(alg, n - 1)
     
     '''
     Returns (and performs) the moves required to solve the Cross.
     '''
-    def solve_Cross(self):
-        # edges: [1, 2, 3, 4]
-        edges = [self.find_piece(2, [1, 5]), self.find_piece(2, [2, 5]), self.find_piece(2, [3, 5]), self.find_piece(2, [4, 5])]
-        solved = list(map(lambda i: True if (edges[i][0] == i + 1 and edges[i][1] == 7) else False, range(4)))
-        solve_options = list()
-        for i in range(4):
-            if not(solved[i]):
-                solve_options.push(self.search_n_moves(3, 3, self.cross_piece_solved, i + 1))
-                #print("To solve piece " + str(i + 1) + ", we do:  " + moves_to_solve[0] + "  (" + str(moves_to_solve[1] + 1) + " move[s])\n")
-        '''matched = False
-        for i in range(3):
-            for j in range(4):
-                if not(solved[j]):
-                    if (solve_options[j][1] == i):
-                        self.do_moves(solve_options[k][1])'''
-        return solved
-    
-    def cross_piece_solved(self, edge_color):
-        piece = self.find_piece(2, [edge_color, 5])
-        return True if (piece[0] == edge_color and piece[1] == 7) else False
-
-    def search_n_moves(self, initial_n, curr_n, checker, checkerParams, totalMoves = ""):
-        if (curr_n < 0 or checker(checkerParams)):
-            return [totalMoves, initial_n - curr_n - 1]
+    def solve_Cross(self, pieces = [1, 2, 3, 4], moves = ""):
+        #edges = list(map(lambda i: self.find_piece(2, [i, 5]), pieces))
+        shortest_solutions = list(map(lambda i: "", pieces))
+        for i in range(len(pieces)):
+            for alg in CROSS:
+                possible_solution = self.orient_cross_alg(alg, pieces[i] - 1)
+                self.do_moves(possible_solution)
+                if self.cross_piece_solved(pieces[i]):
+                    if alg == "":
+                        if len(pieces) == 1:
+                            return moves
+                        else:
+                            del pieces[i]
+                            return self.solve_Cross(pieces, moves)
+                    shortest_solutions[i] = possible_solution
+                    self.do_moves(possible_solution, True)
+                    break
+                self.do_moves(possible_solution, True)
+        length_of_algs = list(map(lambda alg: alg.count(" "), shortest_solutions))
+        index_min = min(range(len(length_of_algs)), key=length_of_algs.__getitem__)
+        this_alg = shortest_solutions[index_min]
+        self.do_moves(this_alg)
+        print("Solutions: " + str(shortest_solutions) + "  --  Just did: " + this_alg)
+        moves += (" " + this_alg)
+        if len(pieces) == 1:
+            return moves
         else:
-            move_options = list()
-            smallest = initial_n - curr_n
-            for move in MOVES:
-                self.do_moves(move)
-                move_option = self.search_n_moves(initial_n, curr_n - 1, checker, checkerParams, totalMoves + " " + move)
-                '''Below code could save us a tonne of time...'''
-                #if smallest == move_option[1]:
-                #    self.do_moves(move, True)
-                #    return move_option
-                move_options.append(move_option)
-                self.do_moves(move, True)
-            while smallest <= initial_n:
-                for option in move_options:
-                    if option[1] == smallest: return option
-                smallest += 1
-            return ["", -1]
+            del pieces[index_min]
+            return self.solve_Cross(pieces, moves)
+        
             
 
                 
@@ -582,7 +582,54 @@ OLL = {
     "57": "R U R' U' R' L F R F' L'"
 }
 
+# resource: my gigantic braiiiiin
+
+CROSS = [
+    "",
+    "L",
+    "L'",
+    "L2",
+    "F L",
+    "B' L'",
+    "U L2",
+    "U' L2", 
+    "U2 L2",
+    "F' L F",
+    "B L' B'",
+    "F2 U L2",
+    "B2 U' L2",
+    "F2 L F2",
+    "B2 L' B2",
+    "R2 U2 L2",
+    "U F' L F",
+    "F' U F L2",
+    "F U F' L2",
+    "B' U' B L2",
+    "B U' B' L2",
+    "R F' U F L2",
+    "L' F U F' L2"
+    "L F U F' L2"
+]
+
 MOVES = ["U", "U2", "U'", "L", "L2", "L'", "F", "F2", "F'", "R", "R2", "R'", "B", "B2", "B'"]
+MOVE_MAP = { # "rotates" your algorithm clockwise: L becomes F
+    "": "",
+    "L": "F",
+    "L'": "F'",
+    "L2": "F2",
+    "F": "R",
+    "F'": "R'",
+    "F2": "R2",
+    "R": "B",
+    "R'": "B'",
+    "R2": "B2",
+    "B": "L",
+    "B'": "L'",
+    "B2": "L2",
+    "U": "U",
+    "U'": "U'",
+    "U2": "U2"
+}
 
 UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
 scrambleForSample = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
@@ -593,20 +640,23 @@ if __name__ == "__main__":
     begin = time.time()
     
     cube = Cube()
-    cube.set_cube([
-        [4, 5, 3, 2, 0, 2, 5, 2, 3],
-        [0, 5, 1, 1, 1, 0, 0, 4, 0],
-        [4, 0, 4, 3, 2, 5, 3, 4, 5],
-        [0, 1, 2, 1, 3, 0, 1, 1, 4],
-        [5, 3, 1, 4, 4, 4, 5, 2, 1],
-        [2, 5, 2, 3, 5, 0, 2, 3, 3]
-    ])
+    cube.do_moves(scrambleForSample)
 
-    #cube.do_moves("F2 L U R2 F' U B2")
+    cube.do_moves("F L B' D' R D' L D")
+    cube.do_moves("F2")
 
-    crossSolution = cube.solve_Cross()
-    print("\nCross solution: " + str(crossSolution))
     cube.print_cube()
+    solution = cube.solve_cross_pieces()
+    print("!!!: " + solution + "\n")
+    cube.print_cube()
+
+    #print(CROSS[22])
+    #newthing = cube.orient_cross_alg(CROSS[22], 0)
+    #print(newthing)
+
+    #crossSolution = cube.solve_Cross()
+    #print("\nCross solution: " + str(crossSolution))
+    #cube.print_cube()
 
     #cube.do_moves(solutionToSample)
     
