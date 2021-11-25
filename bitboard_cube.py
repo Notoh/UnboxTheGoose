@@ -643,10 +643,10 @@ if __name__ == "__main__":
     cube.do_moves(scrambleForSample)
 
     cube.do_moves("F L B' D' R D' L D")
-    cube.do_moves("F2")
+    cube.do_moves("")
 
     cube.print_cube()
-    solution = cube.solve_cross_pieces()
+    solution = cube.solve_Cross()
     print("!!!: " + solution + "\n")
     cube.print_cube()
 
