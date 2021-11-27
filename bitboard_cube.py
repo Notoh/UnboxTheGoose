@@ -586,13 +586,13 @@ class Cube:
         instructions2 = list(map(lambda e: e if e != " " else "", instructions))
         instructions3 = []
         for index in range(len(instructions2)):
-            print("-" + instructions2[index] + "-", end="")
+            #print("-" + instructions2[index] + "-", end="")
             if instructions2[index] != "":
                 info = [TRANSLATE_FACE[instructions2[index][0]], 1, 1]
                 if len(instructions2[index]) > 1:
                     if instructions2[index][1] == "'": info[2] = -1
                     else: info[1] = 2
-                print(" " + str(info))
+                #print(" " + str(info))
                 instructions3.append(info)
         return instructions3
 
