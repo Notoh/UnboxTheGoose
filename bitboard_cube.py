@@ -10,6 +10,9 @@ DOWN = 5
 
 TRANSLATE_FACE = {"U": UP, "L": LEFT, "F": FRONT, "R": RIGHT, "B": BACK, "D": DOWN}
 
+# ALEX, put all your colours in TRANSLATE_COLOR[your_color]
+TRANSLATE_COLOR = [0, 2, 3, 4, 1, 5]
+
 FACE_NUM = 6
 STICKER_NUM = 8
 STICKER_CENTER_EXTERNAL_INDEX = 4
@@ -424,29 +427,54 @@ class Cube:
     def cross_piece_solved(self, edge_color):
         piece = self.find_piece(2, [edge_color, 5])
         return True if (piece[0] == edge_color and piece[1] == 7) else False
+    
+    def F2L_pair_solved(self, left_color, right_color):
+        corner = self.find_piece(3, [left_color, right_color, 5])
+        edge = self.find_piece(2, [left_color, right_color])
+        if (corner[0] != left_color or edge[0] != left_color): return False
+        if (corner[1] != 8 or edge[1] != 5): return False
+        return True
+    
+    '''
+    Find the corner; if you subtract left_color from this value, you get 0 for ready-to-go and 4 for being in own slot
+    '''
+    def corner_slot(self, left_color, right_color, end_color = 5):
+        corner = self.find_piece(3, [end_color, left_color, right_color])
+        return CORNER_MAP[str(corner[0]) + str(corner[1])]
+    
+    '''
+    Find the edge: return -1 if not in slot, otherwise, return the slot, one of [1, 2, 3, 4]
+    '''
+    def edge_slot(self, first_color, second_color):
+        edge = self.find_piece(2, [first_color, second_color])
+        if (edge[0] == 0 or edge[0] == 5 or edge[1] < 3 or edge[1] > 5): return -1
+        if (edge[1] == 3): return (edge[0] + 2) % 4 + 1
+        else: return edge[0]
         
-    def orient_cross_alg(self, alg, n):
-        if (n <= 0): return alg
+    def orient_alg(self, alg, rotations):
+        if (rotations <= 0): return alg
         alg = list(map(lambda move: MOVE_MAP[move], alg.split()))
         alg = ' '.join(alg)
-        if (n == 1): return alg
-        else: return self.orient_cross_alg(alg, n - 1)
+        if (rotations == 1): return alg
+        else: return self.orient_alg(alg, rotations - 1)
     
     '''
     Returns (and performs) the moves required to solve the Cross.
     '''
     def solve_Cross(self, pieces = [1, 2, 3, 4], moves = ""):
         #edges = list(map(lambda i: self.find_piece(2, [i, 5]), pieces))
-        shortest_solutions = list(map(lambda i: "", pieces))
+        shortest_solutions = list(map(lambda i: "U U U U U U U U", pieces))
         for i in range(len(pieces)):
             for alg in CROSS:
-                possible_solution = self.orient_cross_alg(alg, pieces[i] - 1)
+                possible_solution = self.orient_alg(alg, pieces[i] - 1)
                 self.do_moves(possible_solution)
                 if self.cross_piece_solved(pieces[i]):
                     if alg == "":
                         if len(pieces) == 1:
+                            print("Cross Piece " + str(pieces[i]) + ": ")
                             return moves
                         else:
+                            print("Cross Piece " + str(pieces[i]) + ": ")
                             del pieces[i]
                             return self.solve_Cross(pieces, moves)
                     shortest_solutions[i] = possible_solution
@@ -457,20 +485,116 @@ class Cube:
         index_min = min(range(len(length_of_algs)), key=length_of_algs.__getitem__)
         this_alg = shortest_solutions[index_min]
         self.do_moves(this_alg)
-        print("Solutions: " + str(shortest_solutions) + "  --  Just did: " + this_alg)
+        #print("Solutions: " + str(shortest_solutions) + "  --  Just did: " + this_alg)
         moves += (" " + this_alg)
+        print("Cross Piece " + str(pieces[index_min]) + ": " + this_alg)
         if len(pieces) == 1:
             return moves
         else:
             del pieces[index_min]
             return self.solve_Cross(pieces, moves)
-        
-            
+    
+    '''
+    Returns (and performs) the moves required to solve all of F2L!!!.
+    '''
+    def solve_F2L(self, pairs = [1, 2, 3, 4], moves = ""):
+        # For each of the pairs...
+        # Find where the corner is.
+        # If in any slot, do setup, unless F2L_pair_solved!!!
+        # Find where corner is again, put in the relative back-left...
+        # Run through every F2L solution, and check if pair solved at the end of each.
+        # If solved, do what i did for cross
+        # otherwise, undo move and repeat
+        # Way afterwards, find the shortest solution!
+        # Then be recursive
+        solutions = list(map(lambda i: "                        ", pairs))
+        curr_moves = ""
+        for i in range(len(pairs)):
+            curr_moves = ""
+            setup_alg = ""
+            corner_spot = self.corner_slot(pairs[i], pairs[i] % 4 + 1)
+            #print("Corner: " + str(corner_spot))
+            edge_spot = self.edge_slot(pairs[i], pairs[i] % 4 + 1)
+            #print("Edge: " + str(edge_spot))
+            if (corner_spot > 4): # In a slot!
+                if (edge_spot == -1): setup_alg = self.orient_alg(F2L_SETUP[0], corner_spot - 5)
+                else: setup_alg = self.orient_alg(F2L_SETUP[(edge_spot - corner_spot + 8) % 4], corner_spot - 5)
+                self.do_moves(setup_alg)
+                curr_moves = setup_alg
+            corner_spot = self.corner_slot(pairs[i], pairs[i] % 4 + 1)
+            if (corner_spot > 4): # Hashtag FAILURE
+                print("\nThe setup for this F2L pair FAILED!!\ncorner: " + str(corner_spot) + ", edge: " + str(edge_spot) + ", color: " + pairs[i] + "\n")
+                self.do_moves(setup_alg, True)
+            else: # Piece is properly set up
+                setup_adjust = ""
+                if ((corner_spot - pairs[i] + 5) % 4 == 2): setup_adjust = "U"
+                elif ((corner_spot - pairs[i] + 5) % 4 == 3): setup_adjust = "U2"
+                elif ((corner_spot - pairs[i] + 5) % 4 == 0): setup_adjust = "U'"
+                self.do_moves(setup_adjust)
+                if ((corner_spot - pairs[i] + 5) % 4 != 1): curr_moves += (" " + setup_adjust)
 
-                
-            
-            
+                #print("Setup: " + curr_moves)
 
+                for alg in F2L:
+                    possible_solution = self.orient_alg(alg, pairs[i] - 1)
+                    self.do_moves(possible_solution)
+                    if self.F2L_pair_solved(pairs[i], pairs[i] % 4 + 1):
+                        if len(pairs) == 1:
+                            print("F2L Pair " + str(pairs[i]) + ": Skip!")
+                            return (moves + " " + curr_moves + " " + possible_solution)
+                        solutions[i] = curr_moves + " " + possible_solution
+                        self.do_moves(possible_solution, True)
+                        break
+                    self.do_moves(possible_solution, True)
+                self.do_moves(setup_adjust, True)
+                self.do_moves(setup_alg, True)
+        length_of_algs = list(map(lambda alg: alg.count(" "), solutions))
+        index_min = min(range(len(length_of_algs)), key=length_of_algs.__getitem__)
+        this_alg = solutions[index_min]
+        self.do_moves(this_alg)
+        #print("Solutions: " + str(solutions) + "  --  Just did: " + this_alg)
+        moves += (" " + this_alg)
+        print("F2L Pair " + str(pairs[index_min]) + ": " + this_alg)
+        if len(pairs) == 1:
+            return moves
+        else:
+            del pairs[index_min]
+            return self.solve_F2L(pairs, moves)
+    
+    def solve_cube(self):
+        cross_solution = self.solve_Cross()
+        print("Solution to Cross: " + cross_solution + "\n")
+        F2L_solution = self.solve_F2L()
+        print("Solution to First 2 Layers: " + F2L_solution + "\n")
+        OLL_solution = self.solve_OLL()
+        print("Solution to Orienting Last Layer: " + OLL_solution + "\n")
+        PLL_solution = self.solve_PLL()
+        print("Solution to Permuting Last Layer: " + PLL_solution + "\n")
+        print("---SOLUTION---")
+        TOTAL_solution = cross_solution + F2L_solution + " " + OLL_solution + " " + PLL_solution
+        print(TOTAL_solution + "\n")
+        return TOTAL_solution
+    
+    '''
+    Returns an array full of instructions.
+    Format: [[Motor, # of rotations, rotation direction] ... ]
+    '''
+    def parse_instructions(self, moves):
+        moves = moves.strip()
+        moves = " ".join(moves.split())
+        instructions = moves.split()
+        instructions2 = list(map(lambda e: e if e != " " else "", instructions))
+        instructions3 = []
+        for index in range(len(instructions2)):
+            print("-" + instructions2[index] + "-", end="")
+            if instructions2[index] != "":
+                info = [TRANSLATE_FACE[instructions2[index][0]], 1, 1]
+                if len(instructions2[index]) > 1:
+                    if instructions2[index][1] == "'": info[2] = -1
+                    else: info[1] = 2
+                print(" " + str(info))
+                instructions3.append(info)
+        return instructions3
 
 
 
@@ -480,7 +604,6 @@ Test 1276 Last Layer positions! (starts on a solved cube)
 def test1276(cube):
     for OLLalg in OLL:
         cube.do_moves(OLL[OLLalg])
-        cube.do_moves("U")
         for PLLalg in PLL:
             cube.do_moves(PLL[PLLalg])
             #print("\n" + OLLalg + " + " + PLLalg + "\n")
@@ -505,7 +628,7 @@ PLL = {
     "Gc": "L' R' U2 L R F U' B U2 F' U B'", # Gc
     "Gd": "B U' F U2 B' U F' R' L' U2 R L", # Gd
     "H": "L R U2 L' R' F' B' U2 F B", # H
-    "Ja": "R U' L' U R' U2 L U' L' U2' L", # Ja
+    "Ja": "R U' L' U R' U2 L U' L' U2 L", # Ja
     "Jb": "L' U R U' L U2 R' U R U2 R'", # Jb
     "Na": "R U' L U2 R' U L' R U' L U2 R' U L'", # Na
     "Nb": "R' U L' U2 R U' L R' U L' U2 R U' L", # Nb
@@ -544,20 +667,20 @@ OLL = {
     "19": "L' R B R B R' B' L R2 F R F'",
     "20": "L' R' F' U2 L2 U2 L2 U2 L2 F L R",
     "21": "R U R' U R U' R' U R U2 R'",
-    "22": "R U2 R2' U' R2 U' R2' U2 R",
+    "22": "R U2 R2 U' R2 U' R2 U2 R",
     "23": "R' U2 R F U' R' U' R U F'",
     "24": "L F R' F' L' F R F'",
     "25": "R' F R B' R' F' R B",
     "26": "R U2 R' U' R U' R'",
     "27": "R U R' U R U2 R'",
     "28": "R2 F2 L F L' F2 R F' R",
-    "29": "R2' U' R F R' U R2' U' R' F' R",
+    "29": "R2 U' R F R' U R2 U' R' F' R",
     "30": "F' L U L2 U L2 U2 L' U F",
     "31": "R' U' F U R U' R' F' R",
     "32": "R U B' U' R' U R B R'",
     "33": "R U R' U' R' F R F'",
     "34": "R U R2 U' R' F R U R U' F'",
-    "35": "R U2 R2' F R F' R U2 R'",
+    "35": "R U2 R2 F R F' R U2 R'",
     "36": "R U R' U' F' U2 F U R U R'",
     "37": "R' F R F' U' F' U F",
     "38": "L U L' U L U' L' U' L' B L B'",
@@ -607,12 +730,94 @@ CROSS = [
     "B' U' B L2",
     "B U' B' L2",
     "R F' U F L2",
-    "L' F U F' L2"
+    "L' F U F' L2",
     "L F U F' L2"
 ]
 
+# Resource: My Gigantic Braiiiiiiiin
+
+F2L = [ # Assuming corner is at U-L-B intersection
+    "", # skip lol
+# Working with Orange-Green pair
+    # Yellow Up
+        # Green edge side Up
+    "U L' U' L2 F' L' F",
+    "U2 L' U2 L U' L' U L",
+    "U L' U' L U L' U L U L' U2 L",
+    "U' L' U2 L U L' U' L",
+        # Orange edge side Up
+    "F U2 F2 L F L'",
+    "U F U F2 L F L'",
+    "U' F U2 F' U' F U F'",
+    "F U' F' U' F U' F2 L F L'",
+        # Edge in slot
+    "F U' F' U F U' F2 L F L'",
+    "L F' L' F L' U L",
+    # Yellow Back
+        # Green edge side Up
+    "U' L' U' L",
+    "L' U' L U' L' U' L",
+    "U' L U2 L2 U' L2 U' L'",
+    "L' U L U' L' U' L",
+        # Orange edge side Up
+    "U2 F U2 F' U' F U2 F'",
+    "U2 F U F' U2 F U' F'",
+    "F U' F'",
+    "F' L F L' U F U F'",
+        # Edge in slot
+    "U F U F' L F' L' F",
+    "L' U2 L U' L' U' L",
+    # Yellow Left
+        # Green edge side Up
+    "L' U' L U2 L' U L",
+    "L' U2 L U2 L' U L",
+    "U' F U' F' U2 L' U' L",
+    "U2 L' U L",
+        # Orange edge side Up
+    "L' U L U' F U F'",
+    "U' F U' F'",
+    "U2 F U' F' U F U F'",
+    "L' U2 L U' F U F'",
+        # Edge in slot
+    "L' U' L U' F U F'",
+    "L' U L U2 L' U L"
+]
+
+F2L_SETUP = [ # Assuming corner is in L-F slot
+    "L' U L F U2 F'", # 0 - Edge in same slot
+    "F' U' F2 U' F'", # 1 - counterclockwise (from top)
+    "R' F U' F' R", # 2
+    "L U L2 U L" # 3
+]
+
+CORNER_MAP = { # Input: str(face) + str(location_on_face). Output: number based on that diagram I have :)
+    "00": 1,
+    "02": 4,
+    "06": 2,
+    "08": 3,
+    "10": 1,
+    "12": 2,
+    "20": 2,
+    "22": 3,
+    "30": 3,
+    "32": 4,
+    "40": 4,
+    "42": 1,
+    "16": 8,
+    "18": 5,
+    "26": 5,
+    "28": 6,
+    "36": 6,
+    "38": 7,
+    "46": 7,
+    "48": 8,
+    "50": 5,
+    "52": 6,
+    "56": 8,
+    "58": 7
+}
 MOVES = ["U", "U2", "U'", "L", "L2", "L'", "F", "F2", "F'", "R", "R2", "R'", "B", "B2", "B'"]
-MOVE_MAP = { # "rotates" your algorithm clockwise: L becomes F
+MOVE_MAP = { # "rotates" your algorithm clockwise: L becomes F, etc
     "": "",
     "L": "F",
     "L'": "F'",
@@ -636,22 +841,20 @@ scrambleForSample = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
 solutionToSample = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
 
 if __name__ == "__main__":
-    print("Test:")
-    begin = time.time()
-    
     cube = Cube()
     cube.do_moves(scrambleForSample)
 
-    cube.do_moves("F L B' D' R D' L D")
-    cube.do_moves("")
-
+    print("About to solve the following cube:")
     cube.print_cube()
-    solution = cube.solve_Cross()
-    print("!!!: " + solution + "\n")
+    print("---CALCULATING---\n")
+    begin = time.time()
+    
+    instructions = cube.parse_instructions(cube.solve_cube())
+    # print(str(instructions))
     cube.print_cube()
 
     #print(CROSS[22])
-    #newthing = cube.orient_cross_alg(CROSS[22], 0)
+    #newthing = cube.orient_alg(CROSS[22], 0)
     #print(newthing)
 
     #crossSolution = cube.solve_Cross()
@@ -668,7 +871,6 @@ if __name__ == "__main__":
     else: print("\nrip i suck")
     '''
     
-    print(cube.find_piece(2, [3,2]))
     end = time.time()
-    print("Total Time this took: " + str(end - begin) + "seconds")
+    print("\nTotal Time this took: " + str(end - begin) + "seconds")
 
