@@ -1,5 +1,6 @@
 import collections
 import time
+from random import randint
 
 UP = 0
 LEFT = 1
@@ -254,6 +255,22 @@ class Cube:
             for j in range(3):
                 self.__set_color(adj_edges[face_index][i][0], adj_edges[face_index][i][j+1], edges_lst[i][j])
 
+
+    
+    '''
+    args: number of scrambling move
+
+    Scramble the cube by the given rotation number
+    '''
+    def scramble(self, move : int):
+        
+        for i in range(move):
+            face = randint(0, FACE_NUM - 1)
+            rotate = randint(1, 3)
+            self.rotate(face, rotate)
+
+
+
     '''
     args: side_count (2 or 3), [priority colour (which colour's face do you want), other 1 or 2 colours (based on corner vs side)]
     return: [face_index of priority colour, external_index of priority colour]
@@ -363,6 +380,9 @@ class Cube:
         self.print_face(2, "   ")
         self.print_face(5, "   ")
         print("\n")
+
+
+    
 
     '''
     args: string of moves
@@ -540,7 +560,7 @@ class Cube:
                     self.do_moves(possible_solution)
                     if self.F2L_pair_solved(pairs[i], pairs[i] % 4 + 1):
                         if len(pairs) == 1:
-                            print("F2L Pair " + str(pairs[i]) + ": Skip!")
+                            print("F2L Pair " + str(pairs[i]) + ": " + curr_moves + " " + possible_solution)
                             return (moves + " " + curr_moves + " " + possible_solution)
                         solutions[i] = curr_moves + " " + possible_solution
                         self.do_moves(possible_solution, True)
@@ -841,17 +861,57 @@ scrambleForSample = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
 solutionToSample = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
 
 if __name__ == "__main__":
+
+
+    '''s_cube = Cube()
+    s_str : list = []
+    
+    for i in range(10000):
+        cube = Cube()
+        cube.scramble(50)
+
+        print("Init:")
+        cube.print_cube()
+        print()
+
+        instructions = cube.parse_instructions(cube.solve_cube())
+        if len(instructions) < len(s_str) or len(s_str) == 0:
+            s_str = instructions
+            s_cube = cube
+
+    
+    print("Best Candidate")
+    s_cube.print_cube()
+
+    print("\nMove Sequence")
+    print(s_str)
+    '''
+
+    scramble1="U2 F2 B D R2 B2 U' L D2 L2 B L2 D2 F D2 F' R2 B' D2 F' R'" # 64 moves
+    scramble2="D2 F2 U2 B' D2 F R2 D2 L2 F L U' R' U' F' D2 U L' B'" # 70 moves
+    scramble3="L2 F' R2 F2 R2 D2 L2 R2 F' D2 F2 D F2 D L' D B' R2 U'" # 80 moves
+    scramble4="L2 B' U R2 U L2 F2 D' F2 D U2 F2 R2 L' F D' R B2 L2 F' R" # 80 moves
+    scramble5="D' R2 F2 D B2 F2 U L2 U L' D2 R' U L' F' L U B D" # 76 moves
+    scramble6="R2 B2 U2 R2 B' R2 U2 B' F' R2 L F' D2 L F2 R' D B D2" # 70 moves
+    scramble7="F' R D' B2 U' F2 R2 U2 L2 U R2 U F2 D' L U2 F U2 L F'" # 77 moves
+    scramble8="D' R2 U' B2 D L2 F2 L2 D U2 B2 L' D2 F' D U' R' B' D2 L2 U'" # Doesn't find a solution
+    scramble9="F2 D' L F2 U' L' D2 B' R U2 F2 R' F2 U2 R2 F2 R U2 L D2" # 77 moves
+
+    currScramble = scramble1
+
     cube = Cube()
-    cube.do_moves(scrambleForSample)
+    cube.do_moves(currScramble)
 
     print("About to solve the following cube:")
-    cube.print_cube()
+    print("Scramble: " + str(currScramble))
     print("---CALCULATING---\n")
     begin = time.time()
     
     instructions = cube.parse_instructions(cube.solve_cube())
     # print(str(instructions))
-    cube.print_cube()
+    print("---SOLVED!!!---")
+    # cube.print_cube()
+    print("# of moves: " + str(len(instructions)))
 
     #print(CROSS[22])
     #newthing = cube.orient_alg(CROSS[22], 0)
