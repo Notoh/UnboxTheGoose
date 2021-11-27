@@ -837,8 +837,8 @@ MOVE_MAP = { # "rotates" your algorithm clockwise: L becomes F, etc
 }
 
 UAlgorithm = "R' L' F2 B2 R L D R' L' F2 B2 R L"
-scrambleForSample = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
-solutionToSample = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
+scrambleForSample = "B2 L2 D2 B2 D' F2 R2 U2 R2 D' U' B L U2 B U B2 F' R2 U2"
+solutionToSample = "U2 R2 F B2 U' B' U2 L' B' U D R2 U2 R2 F2 D B2 D2 L2 B2"
 
 if __name__ == "__main__":
     cube = Cube()
