@@ -1,6 +1,6 @@
 # UnboxTheGoose
 
-Welcome to UnboxTheGoose! We are a team of five students from the University of Waterloo in the Software Engineering program, and created this project as a final project for one of our courses.
+Welcome to UnboxTheGoose! We are a team of five students from the University of Waterloo in the Software Engineering program, and created this project as a final project for one of our courses. [Video](https://youtu.be/EJQF64A8H0g) of the project in action!
 
 # The Machine
 
