@@ -478,6 +478,7 @@ class Cube:
         if (rotations == 1): return alg
         else: return self.orient_alg(alg, rotations - 1)
     
+
     '''
     Returns (and performs) the moves required to solve the Cross.
     '''
@@ -514,6 +515,7 @@ class Cube:
             del pieces[index_min]
             return self.solve_Cross(pieces, moves)
     
+
     '''
     Returns (and performs) the moves required to solve all of F2L!!!.
     '''
@@ -909,9 +911,9 @@ if __name__ == "__main__":
     
     instructions = cube.parse_instructions(cube.solve_cube())
     # print(str(instructions))
-    print("---SOLVED!!!---")
-    # cube.print_cube()
-    print("# of moves: " + str(len(instructions)))
+    print("\n---SOLVED!!!---")
+    cube.print_cube()
+    # print("# of moves: " + str(len(instructions)))
 
     #print(CROSS[22])
     #newthing = cube.orient_alg(CROSS[22], 0)
